@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1640813922 source:d:\documents\cours\7eme semestre\math\carré\main.cpp
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+
