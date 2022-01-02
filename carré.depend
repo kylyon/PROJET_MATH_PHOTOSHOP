@@ -5,3 +5,22 @@
 	<stdlib.h>
 	<stdio.h>
 
+1641048513 source:d:\documents\cours\7eme semestre\math\carré\src\point.cpp
+	"Point.h"
+
+1641049091 d:\documents\cours\7eme semestre\math\carré\include\point.h
+	<GL/glut.h>
+
+1641059093 source:d:\documents\cours\7eme semestre\math\carré\src\polygon.cpp
+	"Polygon.h"
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+
+1641059080 d:\documents\cours\7eme semestre\math\carré\include\polygon.h
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+

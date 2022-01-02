@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
+#include "Point.h"
+#include "Polygon.h"
 
 using std::vector;
 
@@ -30,17 +32,13 @@ int xContext, yContext;
 
 double c;    // coté du carré
 
-struct Point
-{
-    int x, y;
-};
-
 struct Color
 {
     float r,g,b;
 };
 
-vector<Point> points;
+//vector<Point> points;
+Poly *poly = new Poly();
 vector<Color> colors;
 
 /* prototypes de fonctions */
@@ -116,12 +114,14 @@ glClear(GL_COLOR_BUFFER_BIT);
 // dessin du carré
 // (x0,y0) point inférieur gauche du carré
 
-
-glBegin(GL_POLYGON);
+vector<Point> points = poly->Getpoints();
+glBegin(GL_POINTS);
 for(int i = 0; i < points.size(); i++)
 {
     glColor3f(colors[i].r,colors[i].g,colors[i].b);
-    glVertex2f(points[i].x,points[i].y);
+    float x = points[i].Getx();
+    float y = points[i].Gety();
+    glVertex2f(x,y);
 }
 glEnd();
 
@@ -137,12 +137,14 @@ void mouse(int button,int state,int x,int y)
 	{
 		x0 = x - 250; //on sauvegarde la position de la souris
 		y0 = -y + 250;
-		points.push_back(Point{x0, y0});
+		Point *p = new Point(x0, y0);
+
+		poly->Addpoint(*p);
         colors.push_back(Color{1.0,0.0,0.0});
-		printf("%d\n",points.size());
-		for(int i = 0; i < points.size(); i++)
+		printf("%d\n",poly->Getpoints().size());
+		for(int i = 0; i < poly->Getpoints().size(); i++)
         {
-            printf("%d - %d",points[i].x, points[i].y);
+            printf("%d - %d",poly->Getpoints()[i].Getx(), poly->Getpoints()[i].Gety());
         }
         printf("\n");
 		affichage();
