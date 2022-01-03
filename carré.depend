@@ -24,3 +24,36 @@
 	<vector>
 	"Point.h"
 
+1641127996 source:g:\cours\math\projet_math_photoshop\src\point.cpp
+	"Point.h"
+
+1641127996 g:\cours\math\projet_math_photoshop\include\point.h
+	<GL/glut.h>
+
+1641241335 source:g:\cours\math\projet_math_photoshop\main.cpp
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+	"Polygon.h"
+
+1641241335 g:\cours\math\projet_math_photoshop\include\polygon.h
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+
+1641241335 source:g:\cours\math\projet_math_photoshop\src\polygon.cpp
+	"Polygon.h"
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+
+1641241411 source:g:\cours\math\projet_math_photoshop\src\color.cpp
+	"Color.h"
+
+1641241399 g:\cours\math\projet_math_photoshop\include\color.h
+

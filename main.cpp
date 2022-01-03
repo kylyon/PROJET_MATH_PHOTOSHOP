@@ -115,7 +115,8 @@ glClear(GL_COLOR_BUFFER_BIT);
 // (x0,y0) point inférieur gauche du carré
 
 vector<Point> points = poly->Getpoints();
-glBegin(GL_POINTS);
+glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+glBegin(GL_POLYGON);
 for(int i = 0; i < points.size(); i++)
 {
     glColor3f(colors[i].r,colors[i].g,colors[i].b);
@@ -144,7 +145,7 @@ void mouse(int button,int state,int x,int y)
 		printf("%d\n",poly->Getpoints().size());
 		for(int i = 0; i < poly->Getpoints().size(); i++)
         {
-            printf("%d - %d",poly->Getpoints()[i].Getx(), poly->Getpoints()[i].Gety());
+            printf("%0.2f - %0.2f",poly->Getpoints()[i].Getx(), poly->Getpoints()[i].Gety());
         }
         printf("\n");
 		affichage();
