@@ -25,6 +25,9 @@
 
 using std::vector;
 
+static int window;
+int menu;
+
 int x0, y0;  // clic souris
              // coin inférieur gauche du carré
 
@@ -43,10 +46,10 @@ vector<Color> colors;
 
 /* prototypes de fonctions */
 void affichage(void);                             // modélisation
-void contextMenu(void);                             // modélisation
 void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
-
+void createMenu(void);
+void processMenuEvents(int option);
 
 /* Programme principal */
 int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
@@ -58,8 +61,8 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH); // mode d'affichage RGB, et test prafondeur
     glutInitWindowSize(500, 500);                // dimension fenêtre
 	glutInitWindowPosition (100, 100);           // position coin haut gauche
-	glutCreateWindow("Un carré dans tous ses états");  // nom
-
+	window = glutCreateWindow("Un carré dans tous ses états");  // nom
+    createMenu();
 	/* Repère 2D délimitant les abscisses et les ordonnées*/
 	gluOrtho2D(-250.0,250.0,-250.0,250.0);
 
@@ -85,48 +88,63 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
     return 0;
 }
 
-
-void contextMenu(){
-
-
-// dessin du carré
-// (x0,y0) point inférieur gauche du carré
-
-glBegin(GL_POLYGON);
-glColor3f(1.0,0.0,0.0);
-glVertex2f(xContext,yContext);
-glVertex2f(xContext,yContext + 10);
-glVertex2f(xContext + 10,yContext + 10);
-glVertex2f(xContext + 10,yContext);
-glEnd();
-
-// On force l'affichage du résultat
-glFlush();
+void createMenu(void){
+	menu = glutCreateMenu(processMenuEvents);
+	glutAddMenuEntry("Couleurs",1);
+	glutAddMenuEntry("Polygône à découper",2);
+	glutAddMenuEntry("Tracé fenêtre",3);
+	glutAddMenuEntry("Fenêtrage",4);
+	glutAddMenuEntry("Remplissage",5);
+	glutAddMenuEntry("Quitter", 0);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
+void processMenuEvents(int option) {
+
+	switch (option) {
+	    case 0 :
+	        printf("0");
+	        glutDestroyWindow(window);
+            exit(0);
+	        break;
+		case 1 :
+			printf("1");
+			break;
+		case 2 :
+			printf("2");
+			break;
+		case 3 :
+			printf("3");
+			break;
+		case 4 :
+			printf("4");
+            break;
+        case 5 :
+            printf("5");
+            break;
+	}
+}
 
 void affichage(){
+    glClear(GL_COLOR_BUFFER_BIT);
 
 
-glClear(GL_COLOR_BUFFER_BIT);
+    // dessin du carré
+    // (x0,y0) point inférieur gauche du carré
 
+    vector<Point> points = poly->Getpoints();
+    glBegin(GL_POINTS);
+    for(int i = 0; i < points.size(); i++)
+    {
+        glColor3f(colors[i].r,colors[i].g,colors[i].b);
+        float x = points[i].Getx();
+        float y = points[i].Gety();
+        glVertex2f(x,y);
+    }
+    glEnd();
 
-// dessin du carré
-// (x0,y0) point inférieur gauche du carré
-
-vector<Point> points = poly->Getpoints();
-glBegin(GL_POINTS);
-for(int i = 0; i < points.size(); i++)
-{
-    glColor3f(colors[i].r,colors[i].g,colors[i].b);
-    float x = points[i].Getx();
-    float y = points[i].Gety();
-    glVertex2f(x,y);
-}
-glEnd();
-
-// On force l'affichage du résultat
-glFlush();
+    // On force l'affichage du résultat
+    glFlush();
 }
 
 void mouse(int button,int state,int x,int y)
@@ -156,7 +174,6 @@ void mouse(int button,int state,int x,int y)
 	{
 		xContext = x - 250; //on sauvegarde la position de la souris
 		yContext = -y + 250;
-		contextMenu();
 		return;
 	}
 
