@@ -57,3 +57,22 @@
 
 1641241399 g:\cours\math\projet_math_photoshop\include\color.h
 
+1641238930 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\src\point.cpp
+	"Point.h"
+
+1641238930 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\point.h
+	<GL/glut.h>
+
+1641238930 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\src\polygon.cpp
+	"Polygon.h"
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+
+1641238930 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\polygon.h
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+

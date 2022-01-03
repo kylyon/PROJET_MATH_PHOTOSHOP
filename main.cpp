@@ -26,7 +26,7 @@
 using std::vector;
 
 static int window;
-int menu;
+int mainMenu, otherMenu, colorMenu;
 
 int x0, y0;  // clic souris
              // coin inf�rieur gauche du carr�
@@ -40,6 +40,8 @@ struct Color
     float r,g,b;
 };
 
+Color col = {1.0, 1.0, 1.0};
+
 //vector<Point> points;
 Poly *poly = new Poly();
 vector<Color> colors;
@@ -50,6 +52,7 @@ void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
 void processMenuEvents(int option);
+void ChooseColor(int option);
 
 /* Programme principal */
 int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
@@ -61,7 +64,7 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH); // mode d'affichage RGB, et test prafondeur
     glutInitWindowSize(500, 500);                // dimension fen�tre
 	glutInitWindowPosition (100, 100);           // position coin haut gauche
-	window = glutCreateWindow("Un carr� dans tous ses �tats");  // nom
+	window = glutCreateWindow("Un carre dans tous ses etats");  // nom
     createMenu();
 	/* Rep�re 2D d�limitant les abscisses et les ordonn�es*/
 	gluOrtho2D(-250.0,250.0,-250.0,250.0);
@@ -89,21 +92,43 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 }
 
 void createMenu(void){
-	menu = glutCreateMenu(processMenuEvents);
-	glutAddMenuEntry("Couleurs",1);
-	glutAddMenuEntry("Polyg�ne � d�couper",2);
-	glutAddMenuEntry("Trac� fen�tre",3);
-	glutAddMenuEntry("Fen�trage",4);
+    colorMenu = glutCreateMenu(ChooseColor);
+    glutAddMenuEntry("Rouge", 1);
+    glutAddMenuEntry("Vert", 2);
+    glutAddMenuEntry("Bleu", 3);
+    glutAddMenuEntry("Blanc", 4);
+
+	mainMenu = glutCreateMenu(processMenuEvents);
+    glutAddSubMenu("Couleurs", colorMenu);
+    glutAddMenuEntry("Polygone a decouper",2);
+	glutAddMenuEntry("Trace fenetre",3);
+	glutAddMenuEntry("Fenetrage",4);
 	glutAddMenuEntry("Remplissage",5);
 	glutAddMenuEntry("Quitter", 0);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void ChooseColor(int option) {
+	switch (option) {
+	    case 1 :
+            col = {1.0, 0.0, 0.0};
+	        break;
+		case 2 :
+			col = {0.0, 1.0, 0.0};
+			break;
+		case 3 :
+			col = {0.0, 0.0, 1.0};
+			break;
+		case 4 :
+			col = {1.0, 1.0, 1.0};
+			break;
+	}
 }
 
 void processMenuEvents(int option) {
 
 	switch (option) {
 	    case 0 :
-	        printf("0");
 	        glutDestroyWindow(window);
             exit(0);
 	        break;
@@ -157,7 +182,7 @@ void mouse(int button,int state,int x,int y)
 		Point *p = new Point(x0, y0);
 
 		poly->Addpoint(*p);
-        colors.push_back(Color{1.0,0.0,0.0});
+        colors.push_back(col);
 		printf("%d\n",poly->Getpoints().size());
 		for(int i = 0; i < poly->Getpoints().size(); i++)
         {
@@ -177,7 +202,6 @@ void mouse(int button,int state,int x,int y)
 	}
 
 }
-
 
 
 /* Ev�nement du clavier */
