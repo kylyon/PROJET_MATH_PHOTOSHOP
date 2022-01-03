@@ -30,7 +30,7 @@
 1641127996 g:\cours\math\projet_math_photoshop\include\point.h
 	<GL/glut.h>
 
-1641244629 source:g:\cours\math\projet_math_photoshop\main.cpp
+1641246708 source:g:\cours\math\projet_math_photoshop\main.cpp
 	<windows.h>
 	<GL/glut.h>
 	<stdlib.h>
@@ -49,7 +49,7 @@
 	"Point.h"
 	"Color.h"
 
-1641244543 source:g:\cours\math\projet_math_photoshop\src\polygon.cpp
+1641246624 source:g:\cours\math\projet_math_photoshop\src\polygon.cpp
 	"Polygon.h"
 	<windows.h>
 	<GL/glut.h>
@@ -60,7 +60,7 @@
 	"Point.h"
 	"Color.h"
 
-1641244586 source:g:\cours\math\projet_math_photoshop\src\color.cpp
+1641244653 source:g:\cours\math\projet_math_photoshop\src\color.cpp
 	"Color.h"
 
 1641244659 g:\cours\math\projet_math_photoshop\include\color.h

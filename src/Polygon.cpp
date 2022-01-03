@@ -49,7 +49,7 @@ void Poly::Addpoint(Point p)
 
 void Poly::display()
 {
-    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+    printf("%d\n",m_points.size());
     glBegin(GL_POLYGON);
     for(int i = 0; i < m_points.size(); i++)
     {
