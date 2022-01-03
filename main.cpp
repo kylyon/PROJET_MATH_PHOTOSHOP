@@ -4,12 +4,12 @@
 /*					didac.c							   */
 /*******************************************************/
 /*													   */
-/*	Didactitiel n°1 OpenGL sous Glut				   */
-/*  ESGI : 2I année 						           */
+/*	Didactitiel nï¿½1 OpenGL sous Glut				   */
+/*  ESGI : 2I annï¿½e 						           */
 /*													   */
 /*******************************************************/
 /*													   */
-/*  Objectif : afficher à l'écran un carré en couleur  */
+/*  Objectif : afficher ï¿½ l'ï¿½cran un carrï¿½ en couleur  */
 /*													   */
 /*******************************************************/
 
@@ -29,11 +29,11 @@ static int window;
 int menu;
 
 int x0, y0;  // clic souris
-             // coin inférieur gauche du carré
+             // coin infï¿½rieur gauche du carrï¿½
 
 int xContext, yContext;
 
-double c;    // coté du carré
+double c;    // cotï¿½ du carrï¿½
 
 struct Color
 {
@@ -45,7 +45,7 @@ Poly *poly = new Poly();
 vector<Color> colors;
 
 /* prototypes de fonctions */
-void affichage(void);                             // modélisation
+void affichage(void);                             // modï¿½lisation
 void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
@@ -53,17 +53,17 @@ void processMenuEvents(int option);
 
 /* Programme principal */
 int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
-		  char **argv){  // argv: tableau de chaines de caractères, argv[0] contient le nom du programme lancé (plus un éventuel chemin)
+		  char **argv){  // argv: tableau de chaines de caractï¿½res, argv[0] contient le nom du programme lancï¿½ (plus un ï¿½ventuel chemin)
 
 
 	/* Initialisation de glut et creation de la fenetre */
     glutInit(&argc, argv);                       // Initialisation
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH); // mode d'affichage RGB, et test prafondeur
-    glutInitWindowSize(500, 500);                // dimension fenêtre
+    glutInitWindowSize(500, 500);                // dimension fenï¿½tre
 	glutInitWindowPosition (100, 100);           // position coin haut gauche
-	window = glutCreateWindow("Un carré dans tous ses états");  // nom
+	window = glutCreateWindow("Un carrï¿½ dans tous ses ï¿½tats");  // nom
     createMenu();
-	/* Repère 2D délimitant les abscisses et les ordonnées*/
+	/* Repï¿½re 2D dï¿½limitant les abscisses et les ordonnï¿½es*/
 	gluOrtho2D(-250.0,250.0,-250.0,250.0);
 
 	/* Initialisation d'OpenGL */
@@ -72,28 +72,28 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 	glPointSize(2.0);               // taille d'un point: 2px
 
 	/* Enregistrement des fonctions de rappel
-     => initialisation des fonctions callback appelées par glut */
+     => initialisation des fonctions callback appelï¿½es par glut */
     glutDisplayFunc(affichage);
 	glutKeyboardFunc(clavier);
 	glutMouseFunc(mouse);
 
-    /* rq: le callback de fonction (fonction de rappel) est une fonction qui est passée en argument à une
-	autre fonction. Ici, le main fait usage des deux fonctions de rappel (qui fonctionnent en même temps)
-	alors qu'il ne les connaît pas par avance.*/
+    /* rq: le callback de fonction (fonction de rappel) est une fonction qui est passï¿½e en argument ï¿½ une
+	autre fonction. Ici, le main fait usage des deux fonctions de rappel (qui fonctionnent en mï¿½me temps)
+	alors qu'il ne les connaï¿½t pas par avance.*/
 
 
 
-	/* Entrée dans la boucle principale de glut, traitement des évènements */
-    glutMainLoop();         // lancement de la boucle de réception des évènements
+	/* Entrï¿½e dans la boucle principale de glut, traitement des ï¿½vï¿½nements */
+    glutMainLoop();         // lancement de la boucle de rï¿½ception des ï¿½vï¿½nements
     return 0;
 }
 
 void createMenu(void){
 	menu = glutCreateMenu(processMenuEvents);
 	glutAddMenuEntry("Couleurs",1);
-	glutAddMenuEntry("Polygône à découper",2);
-	glutAddMenuEntry("Tracé fenêtre",3);
-	glutAddMenuEntry("Fenêtrage",4);
+	glutAddMenuEntry("Polygï¿½ne ï¿½ dï¿½couper",2);
+	glutAddMenuEntry("Tracï¿½ fenï¿½tre",3);
+	glutAddMenuEntry("Fenï¿½trage",4);
 	glutAddMenuEntry("Remplissage",5);
 	glutAddMenuEntry("Quitter", 0);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -127,24 +127,23 @@ void processMenuEvents(int option) {
 
 void affichage(){
     glClear(GL_COLOR_BUFFER_BIT);
+// dessin du carrï¿½
+// (x0,y0) point infï¿½rieur gauche du carrï¿½
 
+vector<Point> points = poly->Getpoints();
+glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+glBegin(GL_POLYGON);
+for(int i = 0; i < points.size(); i++)
+{
+    glColor3f(colors[i].r,colors[i].g,colors[i].b);
+    float x = points[i].Getx();
+    float y = points[i].Gety();
+    glVertex2f(x,y);
+}
+glEnd();
 
-    // dessin du carré
-    // (x0,y0) point inférieur gauche du carré
-
-    vector<Point> points = poly->Getpoints();
-    glBegin(GL_POINTS);
-    for(int i = 0; i < points.size(); i++)
-    {
-        glColor3f(colors[i].r,colors[i].g,colors[i].b);
-        float x = points[i].Getx();
-        float y = points[i].Gety();
-        glVertex2f(x,y);
-    }
-    glEnd();
-
-    // On force l'affichage du résultat
-    glFlush();
+// On force l'affichage du rï¿½sultat
+glFlush();
 }
 
 void mouse(int button,int state,int x,int y)
@@ -162,7 +161,7 @@ void mouse(int button,int state,int x,int y)
 		printf("%d\n",poly->Getpoints().size());
 		for(int i = 0; i < poly->Getpoints().size(); i++)
         {
-            printf("%d - %d",poly->Getpoints()[i].Getx(), poly->Getpoints()[i].Gety());
+            printf("%0.2f - %0.2f",poly->Getpoints()[i].Getx(), poly->Getpoints()[i].Gety());
         }
         printf("\n");
 		affichage();
@@ -181,11 +180,11 @@ void mouse(int button,int state,int x,int y)
 
 
 
-/* Evènement du clavier */
+/* Evï¿½nement du clavier */
 void clavier(unsigned char touche,int x,int y){
 	switch (touche){
 
-		case 'p':/* affichage du carré plein*/
+		case 'p':/* affichage du carrï¿½ plein*/
 			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 			glutPostRedisplay();     // permet l'affichage
 			break;
