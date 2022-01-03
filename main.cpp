@@ -22,6 +22,7 @@
 #include <vector>
 #include "Point.h"
 #include "Polygon.h"
+#include "Color.h"
 
 using std::vector;
 
@@ -35,14 +36,10 @@ int xContext, yContext;
 
 double c;    // cot� du carr�
 
-struct Color
-{
-    float r,g,b;
-};
-
 //vector<Point> points;
-Poly *poly = new Poly();
-vector<Color> colors;
+//vector<Color> colors;
+Color *color;
+Poly *poly;
 
 /* prototypes de fonctions */
 void affichage(void);                             // mod�lisation
@@ -55,6 +52,8 @@ void processMenuEvents(int option);
 int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 		  char **argv){  // argv: tableau de chaines de caract�res, argv[0] contient le nom du programme lanc� (plus un �ventuel chemin)
 
+    color = new Color(1.0f,0.0f,1.0f);
+    poly = new Poly(*color);
 
 	/* Initialisation de glut et creation de la fenetre */
     glutInit(&argc, argv);                       // Initialisation
@@ -82,7 +81,7 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 	alors qu'il ne les conna�t pas par avance.*/
 
 
-
+    printf("%f, %f, %f", color->Getred(), color->Getgreen(), color->Getblue());
 	/* Entr�e dans la boucle principale de glut, traitement des �v�nements */
     glutMainLoop();         // lancement de la boucle de r�ception des �v�nements
     return 0;
@@ -127,23 +126,14 @@ void processMenuEvents(int option) {
 
 void affichage(){
     glClear(GL_COLOR_BUFFER_BIT);
-// dessin du carr�
-// (x0,y0) point inf�rieur gauche du carr�
+    // dessin du carr�
+    // (x0,y0) point inf�rieur gauche du carr�
 
-vector<Point> points = poly->Getpoints();
-glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-glBegin(GL_POLYGON);
-for(int i = 0; i < points.size(); i++)
-{
-    glColor3f(colors[i].r,colors[i].g,colors[i].b);
-    float x = points[i].Getx();
-    float y = points[i].Gety();
-    glVertex2f(x,y);
-}
-glEnd();
+    poly->display();
 
-// On force l'affichage du r�sultat
-glFlush();
+
+    // On force l'affichage du r�sultat
+    glFlush();
 }
 
 void mouse(int button,int state,int x,int y)
@@ -157,7 +147,7 @@ void mouse(int button,int state,int x,int y)
 		Point *p = new Point(x0, y0);
 
 		poly->Addpoint(*p);
-        colors.push_back(Color{1.0,0.0,0.0});
+        //colors.push_back(color);
 		printf("%d\n",poly->Getpoints().size());
 		for(int i = 0; i < poly->Getpoints().size(); i++)
         {
