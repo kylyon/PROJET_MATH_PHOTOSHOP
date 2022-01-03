@@ -40,6 +40,8 @@ double c;    // cot� du carr�
 //vector<Color> colors;
 Color *color;
 Poly *poly;
+vector<Poly> polygons;
+bool createMode = false;
 
 /* prototypes de fonctions */
 void affichage(void);                             // mod�lisation
@@ -47,12 +49,13 @@ void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
 void processMenuEvents(int option);
+void newPolygon();
 
 /* Programme principal */
 int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 		  char **argv){  // argv: tableau de chaines de caract�res, argv[0] contient le nom du programme lanc� (plus un �ventuel chemin)
 
-    color = new Color(1.0f,0.0f,1.0f);
+    color = new Color(1.0f,0.0f,0.0f);
     poly = new Poly(*color);
 
 	/* Initialisation de glut et creation de la fenetre */
@@ -111,6 +114,7 @@ void processMenuEvents(int option) {
 			break;
 		case 2 :
 			printf("2");
+			newPolygon();
 			break;
 		case 3 :
 			printf("3");
@@ -126,14 +130,27 @@ void processMenuEvents(int option) {
 
 void affichage(){
     glClear(GL_COLOR_BUFFER_BIT);
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     // dessin du carr�
     // (x0,y0) point inf�rieur gauche du carr�
 
-    poly->display();
+    for(int i = 0; i < polygons.size(); i++)
+    {
+        polygons[i].display();
+    }
+
 
 
     // On force l'affichage du r�sultat
     glFlush();
+}
+
+void newPolygon()
+{
+    printf("rata");
+    poly = new Poly(*color);
+    polygons.push_back(*poly);
+    createMode = true;
 }
 
 void mouse(int button,int state,int x,int y)
@@ -144,16 +161,11 @@ void mouse(int button,int state,int x,int y)
 	{
 		x0 = x - 250; //on sauvegarde la position de la souris
 		y0 = -y + 250;
-		Point *p = new Point(x0, y0);
-
-		poly->Addpoint(*p);
-        //colors.push_back(color);
-		printf("%d\n",poly->Getpoints().size());
-		for(int i = 0; i < poly->Getpoints().size(); i++)
-        {
-            printf("%0.2f - %0.2f",poly->Getpoints()[i].Getx(), poly->Getpoints()[i].Gety());
-        }
-        printf("\n");
+		if(createMode){
+            Point *p = new Point(x0, y0);
+            polygons[polygons.size() - 1].Addpoint(*p);
+		}
+        printf("Avant\n");
 		affichage();
 		return;
 	}
