@@ -22,11 +22,12 @@
 #include <vector>
 #include "Point.h"
 #include "Polygon.h"
+#include "Color.h"
 
 using std::vector;
 
 static int window;
-int mainMenu, otherMenu, colorMenu;
+int menu;
 
 int x0, y0;  // clic souris
              // coin inf�rieur gauche du carr�
@@ -35,16 +36,10 @@ int xContext, yContext;
 
 double c;    // cot� du carr�
 
-struct Color
-{
-    float r,g,b;
-};
-
-Color col = {1.0, 1.0, 1.0};
-
 //vector<Point> points;
-Poly *poly = new Poly();
-vector<Color> colors;
+//vector<Color> colors;
+Color *color;
+Poly *poly;
 
 /* prototypes de fonctions */
 void affichage(void);                             // mod�lisation
@@ -52,19 +47,20 @@ void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
 void processMenuEvents(int option);
-void ChooseColor(int option);
 
 /* Programme principal */
 int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 		  char **argv){  // argv: tableau de chaines de caract�res, argv[0] contient le nom du programme lanc� (plus un �ventuel chemin)
 
+    color = new Color(1.0f,0.0f,1.0f);
+    poly = new Poly(*color);
 
 	/* Initialisation de glut et creation de la fenetre */
     glutInit(&argc, argv);                       // Initialisation
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH); // mode d'affichage RGB, et test prafondeur
     glutInitWindowSize(500, 500);                // dimension fen�tre
 	glutInitWindowPosition (100, 100);           // position coin haut gauche
-	window = glutCreateWindow("Un carre dans tous ses etats");  // nom
+	window = glutCreateWindow("Un carr� dans tous ses �tats");  // nom
     createMenu();
 	/* Rep�re 2D d�limitant les abscisses et les ordonn�es*/
 	gluOrtho2D(-250.0,250.0,-250.0,250.0);
@@ -85,50 +81,28 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 	alors qu'il ne les conna�t pas par avance.*/
 
 
-
+    printf("%f, %f, %f", color->Getred(), color->Getgreen(), color->Getblue());
 	/* Entr�e dans la boucle principale de glut, traitement des �v�nements */
     glutMainLoop();         // lancement de la boucle de r�ception des �v�nements
     return 0;
 }
 
 void createMenu(void){
-    colorMenu = glutCreateMenu(ChooseColor);
-    glutAddMenuEntry("Rouge", 1);
-    glutAddMenuEntry("Vert", 2);
-    glutAddMenuEntry("Bleu", 3);
-    glutAddMenuEntry("Blanc", 4);
-
-	mainMenu = glutCreateMenu(processMenuEvents);
-    glutAddSubMenu("Couleurs", colorMenu);
-    glutAddMenuEntry("Polygone a decouper",2);
-	glutAddMenuEntry("Trace fenetre",3);
-	glutAddMenuEntry("Fenetrage",4);
+	menu = glutCreateMenu(processMenuEvents);
+	glutAddMenuEntry("Couleurs",1);
+	glutAddMenuEntry("Polyg�ne � d�couper",2);
+	glutAddMenuEntry("Trac� fen�tre",3);
+	glutAddMenuEntry("Fen�trage",4);
 	glutAddMenuEntry("Remplissage",5);
 	glutAddMenuEntry("Quitter", 0);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
-}
-
-void ChooseColor(int option) {
-	switch (option) {
-	    case 1 :
-            col = {1.0, 0.0, 0.0};
-	        break;
-		case 2 :
-			col = {0.0, 1.0, 0.0};
-			break;
-		case 3 :
-			col = {0.0, 0.0, 1.0};
-			break;
-		case 4 :
-			col = {1.0, 1.0, 1.0};
-			break;
-	}
 }
 
 void processMenuEvents(int option) {
 
 	switch (option) {
 	    case 0 :
+	        printf("0");
 	        glutDestroyWindow(window);
             exit(0);
 	        break;
@@ -152,23 +126,14 @@ void processMenuEvents(int option) {
 
 void affichage(){
     glClear(GL_COLOR_BUFFER_BIT);
-// dessin du carr�
-// (x0,y0) point inf�rieur gauche du carr�
+    // dessin du carr�
+    // (x0,y0) point inf�rieur gauche du carr�
 
-vector<Point> points = poly->Getpoints();
-glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-glBegin(GL_POLYGON);
-for(int i = 0; i < points.size(); i++)
-{
-    glColor3f(colors[i].r,colors[i].g,colors[i].b);
-    float x = points[i].Getx();
-    float y = points[i].Gety();
-    glVertex2f(x,y);
-}
-glEnd();
+    poly->display();
 
-// On force l'affichage du r�sultat
-glFlush();
+
+    // On force l'affichage du r�sultat
+    glFlush();
 }
 
 void mouse(int button,int state,int x,int y)
@@ -182,7 +147,7 @@ void mouse(int button,int state,int x,int y)
 		Point *p = new Point(x0, y0);
 
 		poly->Addpoint(*p);
-        colors.push_back(col);
+        //colors.push_back(color);
 		printf("%d\n",poly->Getpoints().size());
 		for(int i = 0; i < poly->Getpoints().size(); i++)
         {
@@ -202,6 +167,7 @@ void mouse(int button,int state,int x,int y)
 	}
 
 }
+
 
 
 /* Ev�nement du clavier */

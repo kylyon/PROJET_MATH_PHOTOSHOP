@@ -6,7 +6,6 @@ class Color
 {
     public:
         Color();
-        Color(float red, float green, float blue, float alpha);
         Color(float red, float green, float blue);
         virtual ~Color();
 
@@ -16,8 +15,6 @@ class Color
         void Setgreen(float val) { m_green = val; }
         float Getblue() { return m_blue; }
         void Setblue(float val) { m_blue = val; }
-        float Getalpha() { return m_alpha; }
-        void Setalpha(float val) { m_alpha = val; }
 
     protected:
 
@@ -25,7 +22,6 @@ class Color
         float m_red;
         float m_green;
         float m_blue;
-        float m_alpha;
 };
 
 #endif // COLOR_H
