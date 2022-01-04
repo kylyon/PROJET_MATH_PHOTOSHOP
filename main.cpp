@@ -27,7 +27,7 @@
 using std::vector;
 
 static int window;
-int menu, color_menu;
+int menu, color_menu, color_polygon_menu, color_window_menu, color_cut_polygon_menu;
 
 int x0, y0;  // clic souris
              // coin inf�rieur gauche du carr�
@@ -48,6 +48,7 @@ void affichage(void);                             // mod�lisation
 void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
+void createColorMenu();
 void processMenuEvents(int option);
 void processColorEvents(int option);
 void newPolygon();
@@ -92,11 +93,16 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 }
 
 void createMenu(void){
+    color_polygon_menu = glutCreateMenu(processColorEvents);
+    createColorMenu();
+    color_window_menu = glutCreateMenu(processColorEvents);
+    createColorMenu();
+    color_cut_polygon_menu = glutCreateMenu(processColorEvents);
+    createColorMenu();
     color_menu = glutCreateMenu(processColorEvents);
-    glutAddMenuEntry("Rouge",1);
-    glutAddMenuEntry("Vert",2);
-    glutAddMenuEntry("Bleu",3);
-    glutAddMenuEntry("Blanc",4);
+    glutAddSubMenu("Polygone a decouper", color_polygon_menu);
+	glutAddSubMenu("Fenetrage", color_window_menu);
+	glutAddSubMenu("Polygone decouper", color_cut_polygon_menu);
 	menu = glutCreateMenu(processMenuEvents);
 	glutAddSubMenu("Couleurs", color_menu);
 	glutAddMenuEntry("Polygone a decouper",2);
@@ -105,6 +111,13 @@ void createMenu(void){
 	glutAddMenuEntry("Remplissage",5);
 	glutAddMenuEntry("Quitter", 0);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void createColorMenu() {
+    glutAddMenuEntry("Rouge",1);
+    glutAddMenuEntry("Vert",2);
+    glutAddMenuEntry("Bleu",3);
+    glutAddMenuEntry("Blanc",4);
 }
 
 void processColorEvents(int option) {
