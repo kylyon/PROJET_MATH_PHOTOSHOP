@@ -27,7 +27,7 @@
 using std::vector;
 
 static int window;
-int menu;
+int menu, color_menu;
 
 int x0, y0;  // clic souris
              // coin inf�rieur gauche du carr�
@@ -49,6 +49,7 @@ void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
 void processMenuEvents(int option);
+void processColorEvents(int option);
 void newPolygon();
 
 /* Programme principal */
@@ -63,7 +64,7 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH); // mode d'affichage RGB, et test prafondeur
     glutInitWindowSize(500, 500);                // dimension fen�tre
 	glutInitWindowPosition (100, 100);           // position coin haut gauche
-	window = glutCreateWindow("Un carr� dans tous ses �tats");  // nom
+	window = glutCreateWindow("Maths Projet 4A3DJV");  // nom
     createMenu();
 	/* Rep�re 2D d�limitant les abscisses et les ordonn�es*/
 	gluOrtho2D(-250.0,250.0,-250.0,250.0);
@@ -91,18 +92,43 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 }
 
 void createMenu(void){
+    color_menu = glutCreateMenu(processColorEvents);
+    glutAddMenuEntry("Rouge",1);
+    glutAddMenuEntry("Vert",2);
+    glutAddMenuEntry("Bleu",3);
+    glutAddMenuEntry("Blanc",4);
 	menu = glutCreateMenu(processMenuEvents);
-	glutAddMenuEntry("Couleurs",1);
-	glutAddMenuEntry("Polyg�ne � d�couper",2);
-	glutAddMenuEntry("Trac� fen�tre",3);
-	glutAddMenuEntry("Fen�trage",4);
+	glutAddSubMenu("Couleurs", color_menu);
+	glutAddMenuEntry("Polygone a decouper",2);
+	glutAddMenuEntry("Trace fenetre",3);
+	glutAddMenuEntry("Fenetrage",4);
 	glutAddMenuEntry("Remplissage",5);
 	glutAddMenuEntry("Quitter", 0);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
-void processMenuEvents(int option) {
+void processColorEvents(int option) {
+    switch (option) {
+	    case 1 :
+	        color = new Color(1.0f,0.0f,0.0f);
+	        newPolygon();
+	        break;
+		case 2 :
+		    color = new Color(0.0f,1.0f,0.0f);
+			newPolygon();
+			break;
+		case 3 :
+			color = new Color(0.0f,0.0f,1.0f);
+			newPolygon();
+			break;
+		case 4 :
+		    color = new Color(1.0f,1.0f,1.0f);
+			newPolygon();
+			break;
+	}
+}
 
+void processMenuEvents(int option) {
 	switch (option) {
 	    case 0 :
 	        printf("0");
@@ -138,16 +164,12 @@ void affichage(){
     {
         polygons[i].display();
     }
-
-
-
     // On force l'affichage du r�sultat
     glFlush();
 }
 
 void newPolygon()
 {
-    printf("rata");
     poly = new Poly(*color);
     polygons.push_back(*poly);
     createMode = true;
@@ -179,8 +201,6 @@ void mouse(int button,int state,int x,int y)
 	}
 
 }
-
-
 
 /* Ev�nement du clavier */
 void clavier(unsigned char touche,int x,int y){
