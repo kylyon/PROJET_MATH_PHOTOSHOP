@@ -41,7 +41,8 @@ double c;    // cot� du carr�
 Color *color;
 Poly *poly;
 vector<Poly> polygons;
-bool createMode = false;
+vector<Poly> windows;
+int mode = 0;
 
 /* prototypes de fonctions */
 void affichage(void);                             // mod�lisation
@@ -52,6 +53,8 @@ void createColorMenu();
 void processMenuEvents(int option);
 void processColorEvents(int option);
 void newPolygon();
+bool coupe(Point P1, Point P2, Point P3, Point P4);
+Point intersection(Point P1, Point P2, Point P3, Point P4);
 
 /* Programme principal */
 int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
@@ -86,7 +89,22 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 	alors qu'il ne les conna�t pas par avance.*/
 
 
-    printf("%f, %f, %f", color->Getred(), color->Getgreen(), color->Getblue());
+    //printf("%f, %f, %f", color->Getred(), color->Getgreen(), color->Getblue());
+
+    Point *P1 = new Point(0.0, 1.0);
+    Point *P2 = new Point(1.0, -1.0);
+    Point *P3 = new Point(0.0, -1.0);
+    Point *P4 = new Point(1.0, 1.0);
+
+    bool c = coupe(*P1, *P2, *P3, *P4);
+
+    printf("%d", c);
+    if(c)
+    {
+        Point temp = intersection(*P1, *P2, *P3, *P4);
+        printf("\n%f - %f", temp.Getx(), temp.Gety());
+    }
+
 	/* Entr�e dans la boucle principale de glut, traitement des �v�nements */
     glutMainLoop();         // lancement de la boucle de r�ception des �v�nements
     return 0;
@@ -185,7 +203,109 @@ void newPolygon()
 {
     poly = new Poly(*color);
     polygons.push_back(*poly);
-    createMode = true;
+    mode = 1;
+}
+
+void newWindow()
+{
+    poly = new Poly(*color);
+    windows.push_back(*poly);
+    mode = 2;
+}
+
+bool cyrusBeck(Point p1, Point p2, Poly window)
+{
+    vector<Point> normal;
+    for(int i = 0; i < window.Getpoints().size(); i++)
+    {
+        //calcule des normales
+    }
+}
+
+bool coupe(Point P1, Point P2, Point P3, Point P4)
+{
+    float det = (P3.Gety() - P4.Gety()) * (P2.Getx() - P1.Getx()) - (P3.Getx() - P4.Getx()) * (P2.Gety() - P1.Gety());
+    return det != 0;
+}
+
+Point intersection(Point P1, Point P2, Point P3, Point P4)
+{
+    float a, b;
+    if(P1.Getx() == P2.Getx())//Test si la droite du polygone est verticale
+    {
+        if(P3.Gety() == P4.Gety())//Test si la droite de la fenetre est horizontale
+        {
+            Point *p =  new Point(P1.Getx(), P3.Gety());
+            return *p;
+        }
+        a = (P4.Gety() - P3.Gety())/(P4.Getx() - P3.Getx());
+        b = (P4.Gety() - a * P4.Getx());
+
+        Point *p =  new Point(P1.Getx(), a * P1.Getx() + b);
+        return *p;
+    }
+
+    if(P4.Getx() == P3.Getx())//Test si la droite de la fenetre est verticale
+    {
+        if(P1.Gety() == P2.Gety())//Test si la droite du polygone est horizontale
+        {
+            Point *p =  new Point(P3.Getx(), P1.Gety());
+            return *p;
+        }
+        a = (P2.Gety() - P1.Gety())/(P2.Getx() - P1.Getx());
+        b = (P1.Gety() - a * P1.Getx());
+
+        Point *p =  new Point(P3.Getx(), a * P3.Getx() + b);
+        return *p;
+    }
+
+    float a1, b1, a2, b2, x, y;
+    a1 = (P2.Gety() - P1.Gety())/(P2.Getx() - P1.Getx());
+    b1 = (P1.Gety() - a1 * P1.Getx());
+
+    a2 = (P4.Gety() - P3.Gety())/(P4.Getx() - P3.Getx());
+    b2 = (P4.Gety() - a2 * P4.Getx());
+
+    x = (b2 - b1)/(a1 - a2);
+    y = a2 * x + b2;
+
+    Point *p =  new Point(x, y);
+    return *p;
+}
+
+bool visible()
+{
+
+}
+
+Poly sutherlandHodgman(Poly p, Poly window)
+{
+    vector<Point> PL = p.Getpoints();
+    vector<Point> PW = window.Getpoints();
+    PW.push_back(window.Getpoints()[0]);
+
+    vector<Point> PS;
+    int n;
+    Point S,F,I;
+
+    for(int i = 0; i < PW.size() - 1; i++)
+    {
+        n = 0;
+        PS.clear();
+
+        for(int j = 0; j < PL.size(); j++)
+        {
+            if(j==0)
+            {
+                F = PL[j];
+            }
+            else
+            {
+                //if(coupe())
+            }
+        }
+    }
+
 }
 
 void mouse(int button,int state,int x,int y)
@@ -196,9 +316,17 @@ void mouse(int button,int state,int x,int y)
 	{
 		x0 = x - 250; //on sauvegarde la position de la souris
 		y0 = -y + 250;
-		if(createMode){
+		if(mode != 0){
             Point *p = new Point(x0, y0);
-            polygons[polygons.size() - 1].Addpoint(*p);
+            switch(mode)
+            {
+            case 1:
+                polygons[polygons.size() - 1].Addpoint(*p);
+                break;
+            case 2:
+                windows[windows.size() - 1].Addpoint(*p);
+                break;
+            }
 		}
         printf("Avant\n");
 		affichage();
