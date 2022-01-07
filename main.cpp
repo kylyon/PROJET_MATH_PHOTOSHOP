@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
+#include <cmath>
 #include "Point.h"
 #include "Polygon.h"
 #include "Color.h"
@@ -29,7 +30,7 @@ using std::vector;
 static int window;
 int menu, color_menu;
 
-int x0, y0;  // clic souris
+int xClic, yClic;  // clic souris
              // coin inf�rieur gauche du carr�
 
 int xContext, yContext;
@@ -52,7 +53,9 @@ void createMenu(void);
 void processMenuEvents(int option);
 void processColorEvents(int option);
 void newPolygon();
+void newWindow();
 bool coupe(Point P1, Point P2, Point P3, Point P4);
+bool visible(Point S, Point F, Point F1, bool antiHoraire);
 Point intersection(Point P1, Point P2, Point P3, Point P4);
 
 /* Programme principal */
@@ -103,6 +106,11 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
         Point temp = intersection(*P1, *P2, *P3, *P4);
         printf("\n%f - %f", temp.Getx(), temp.Gety());
     }
+
+    bool v1 = visible(*P4, *P1, *P2, true);
+    bool v2 = visible(*P3, *P1, *P2, true);
+
+    printf("\n%d - %d", v1, v2);
 
 	/* Entr�e dans la boucle principale de glut, traitement des �v�nements */
     glutMainLoop();         // lancement de la boucle de r�ception des �v�nements
@@ -162,6 +170,8 @@ void processMenuEvents(int option) {
 			break;
 		case 3 :
 			printf("3");
+			newWindow();
+
 			break;
 		case 4 :
 			printf("4");
@@ -176,11 +186,16 @@ void affichage(){
     glClear(GL_COLOR_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     // dessin du carr�
-    // (x0,y0) point inf�rieur gauche du carr�
+    // (xClic,yClic) point inf�rieur gauche du carr�
 
     for(int i = 0; i < polygons.size(); i++)
     {
         polygons[i].display();
+    }
+
+    for(int i = 0; i < windows.size(); i++)
+    {
+        windows[i].display();
     }
     // On force l'affichage du r�sultat
     glFlush();
@@ -260,9 +275,44 @@ Point intersection(Point P1, Point P2, Point P3, Point P4)
     return *p;
 }
 
-bool visible()
+bool visible(Point S, Point F, Point F1, bool antiHoraire)
 {
+    float dx = F1.Getx() - F.Getx();
+    float dy = F1.Gety() - F.Gety();
+    Point *normal = new Point(dy, -dx);
+    if(antiHoraire)
+    {
+        normal = new Point(-dy, dx);
+    }
 
+    printf("\nNormale : %f, %f", normal->Getx(), normal->Gety());
+
+    //float n_norme = sqrt(pow(normal->Getx(), 2) + pow(normal->Gety(), 2));
+
+    //printf(", Norme Normale : %f", n_norme);
+
+    float vx = S.Getx() - F.Getx();
+    float vy = S.Gety() - F.Gety();
+
+    Point *v = new Point(vx, vy);
+
+    //printf(", Vecteur SF : %f, %f", v->Getx(), v->Gety());
+
+    //float v_norme = sqrt(pow(v->Getx(), 2) + pow(v->Gety(), 2));
+
+    //printf(", Norme SF : %f", v_norme);
+
+    //float uv = normal->Getx()*v->Getx() + normal->Gety()*v->Gety();
+
+    //printf(", noraml * SF : %f", uv);
+
+    //float theta = uv/(n_norme*v_norme);
+
+    //printf(", angle : %f", theta);
+
+    printf(", Produit Scalaire : %f", (normal->Getx() * v->Getx()) + (normal->Gety() * v->Gety()));
+
+    return (normal->Getx() * v->Getx()) + (normal->Gety() * v->Gety()) >= 0;
 }
 
 Poly sutherlandHodgman(Poly p, Poly window)
@@ -288,10 +338,39 @@ Poly sutherlandHodgman(Poly p, Poly window)
             }
             else
             {
-                //if(coupe())
+                if(coupe(S,PL[j], PW[i], PW[(i+1)%PW.size()] ))
+                {
+                    I = intersection(S,PL[j], PW[i], PW[(i+1)%PW.size()] );
+                    PS.push_back(I);
+                }
+            }
+            S = PL[j];
+            if(visible(S,PW[i], PW[(i+1)%PW.size()], true))
+            {
+                PS.push_back(S);
+                n++;
             }
         }
+        if(n>0)
+        {
+            if(coupe(S,F, PW[i], PW[(i+1)%PW.size()] ))
+            {
+                I = intersection(S,F, PW[i], PW[(i+1)%PW.size()] );
+                PS.push_back(I);
+                n++;
+            }
+            PL = PS;
+        }
     }
+
+    Poly temp = Poly(p.Getcolor());
+
+    for(int i = 0; i < PL.size(); i++)
+    {
+        temp.Addpoint(PL[i]);
+    }
+
+    return temp;
 
 }
 
@@ -301,17 +380,27 @@ void mouse(int button,int state,int x,int y)
 	// Si on appuie sur le bouton de gauche
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
-		x0 = x - 250; //on sauvegarde la position de la souris
-		y0 = -y + 250;
+		xClic = x - 250; //on sauvegarde la position de la souris
+		yClic = -y + 250;
 		if(mode != 0){
-            Point *p = new Point(x0, y0);
+            Point *p = new Point(xClic, yClic);
             switch(mode)
             {
             case 1:
                 polygons[polygons.size() - 1].Addpoint(*p);
                 break;
             case 2:
+                printf("yz");
                 windows[windows.size() - 1].Addpoint(*p);
+                printf("\nSize : %d",  polygons.size());
+                if(windows[windows.size() - 1].Getpoints().size() >= 3)
+                {
+                    for(int i = 0; i < polygons.size(); i++)
+                    {
+                        //Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
+                        //polygons.push_back(temp);
+                    }
+                }
                 break;
             }
 		}
