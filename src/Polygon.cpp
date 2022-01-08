@@ -43,13 +43,13 @@ void Poly::Addpoint(Point p)
         yMin = p.Gety();
     }
 
-    printf("%0.2f - %0.2f - %0.2f - %0.2f", xMax, xMin, yMax, yMin);
+    //printf("%0.2f - %0.2f - %0.2f - %0.2f", xMax, xMin, yMax, yMin);
 
 }
 
 void Poly::display()
 {
-    printf("%d\n",m_points.size());
+    //printf("%d\n",m_points.size());
     glBegin(GL_POLYGON);
     for(int i = 0; i < m_points.size(); i++)
     {

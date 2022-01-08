@@ -18,6 +18,7 @@ class Poly
         virtual ~Poly();
 
         vector<Point> Getpoints() { return m_points; }
+        Color Getcolor() { return color; }
         void Addpoint(Point p);
         void display();
 
