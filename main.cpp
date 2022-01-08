@@ -43,6 +43,7 @@ Color *color;
 Poly *poly;
 vector<Poly> polygons;
 vector<Poly> windows;
+vector<Poly> polywindow;
 int mode = 0;
 
 /* prototypes de fonctions */
@@ -171,7 +172,6 @@ void processMenuEvents(int option) {
 		case 3 :
 			printf("3");
 			newWindow();
-
 			break;
 		case 4 :
 			printf("4");
@@ -196,6 +196,11 @@ void affichage(){
     for(int i = 0; i < windows.size(); i++)
     {
         windows[i].display();
+    }
+
+    for(int i = 0; i < polywindow.size(); i++)
+    {
+        polywindow[i].display();
     }
     // On force l'affichage du r�sultat
     glFlush();
@@ -285,7 +290,7 @@ bool visible(Point S, Point F, Point F1, bool antiHoraire)
         normal = new Point(-dy, dx);
     }
 
-    printf("\nNormale : %f, %f", normal->Getx(), normal->Gety());
+    //printf("\nNormale : %f, %f", normal->Getx(), normal->Gety());
 
     //float n_norme = sqrt(pow(normal->Getx(), 2) + pow(normal->Gety(), 2));
 
@@ -310,7 +315,7 @@ bool visible(Point S, Point F, Point F1, bool antiHoraire)
 
     //printf(", angle : %f", theta);
 
-    printf(", Produit Scalaire : %f", (normal->Getx() * v->Getx()) + (normal->Gety() * v->Gety()));
+    //printf(", Produit Scalaire : %f", (normal->Getx() * v->Getx()) + (normal->Gety() * v->Gety()));
 
     return (normal->Getx() * v->Getx()) + (normal->Gety() * v->Gety()) >= 0;
 }
@@ -320,6 +325,8 @@ Poly sutherlandHodgman(Poly p, Poly window)
     vector<Point> PL = p.Getpoints();
     vector<Point> PW = window.Getpoints();
     PW.push_back(window.Getpoints()[0]);
+
+    printf("\nTaille %d - %d", PL.size(), PW.size());
 
     vector<Point> PS;
     int n;
@@ -345,7 +352,7 @@ Poly sutherlandHodgman(Poly p, Poly window)
                 }
             }
             S = PL[j];
-            if(visible(S,PW[i], PW[(i+1)%PW.size()], true))
+            if(visible(S,PW[i], PW[(i+1)%PW.size()], false))
             {
                 PS.push_back(S);
                 n++;
@@ -363,12 +370,14 @@ Poly sutherlandHodgman(Poly p, Poly window)
         }
     }
 
-    Poly temp = Poly(p.Getcolor());
+
+    Poly temp = Poly(Color(1.0,1.0,1.0));
 
     for(int i = 0; i < PL.size(); i++)
     {
         temp.Addpoint(PL[i]);
     }
+
 
     return temp;
 
@@ -395,10 +404,12 @@ void mouse(int button,int state,int x,int y)
                 printf("\nSize : %d",  polygons.size());
                 if(windows[windows.size() - 1].Getpoints().size() >= 3)
                 {
+                    printf("yaaaa");
+                    polywindow.clear();
                     for(int i = 0; i < polygons.size(); i++)
                     {
-                        //Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
-                        //polygons.push_back(temp);
+                        Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
+                        polywindow.push_back(temp);
                     }
                 }
                 break;
