@@ -21,6 +21,7 @@ class Poly
         Color Getcolor() { return color; }
         void Addpoint(Point p);
         void display();
+        bool isHoraire();
 
     protected:
 
