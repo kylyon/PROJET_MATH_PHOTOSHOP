@@ -59,6 +59,19 @@ void Poly::display()
         glVertex2f(x,y);
     }
     glEnd();
+    //printf("\nis Horaire : %d", this->isHoraire());
+}
+
+bool Poly::isHoraire()
+{
+    int res = 0;
+    for(int i = 0; i < m_points.size(); i++)
+    {
+        res += (m_points[(i + 1) % m_points.size()].Getx() - m_points[i].Getx()) * (m_points[(i + 1) % m_points.size()].Gety() + m_points[i].Gety());
+        //printf("\n(%f,%f)(%f,%f) = %f",m_points[(i + 1) % m_points.size()].Getx() , m_points[i].Getx(),m_points[(i + 1) % m_points.size()].Gety() , m_points[i].Gety(), (m_points[(i + 1) % m_points.size()].Getx() - m_points[i].Getx()) * (m_points[(i + 1) % m_points.size()].Gety() + m_points[i].Gety()));
+    }
+
+    return res > 0;
 }
 
 Poly::~Poly()
