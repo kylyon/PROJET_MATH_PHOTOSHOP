@@ -221,68 +221,91 @@ void newWindow()
     mode = 2;
 }
 
-bool cyrusBeck(Point p1, Point p2, Poly window)
+bool cyrusBeck(Point *p1, Point *p2, Poly window, Point *newP1, Point *newP2, int *m)
 {
-    float dx = F1.Getx() - F.Getx();
-    float dy = F1.Gety() - F.Gety();
-    Point *normal = new Point(dy, -dx);
-    if(!window.isHoraire())
+    vector<Point> normals;
+    Point *normal;
+    for(int k = 0; k < window.Getpoints().size(); k++)
     {
-        normal = new Point(-dy, dx);
+        float dx = window.Getpoints()[(k + 1)%window.Getpoints().size()].Getx() - window.Getpoints()[k].Getx();
+        float dy = window.Getpoints()[(k + 1)%window.Getpoints().size()].Gety() - window.Getpoints()[k].Gety();
+        normal = new Point(dy, -dx);
+        if(!window.isHoraire())
+        {
+            normal = new Point(-dy, dx);
+        }
+        normals.push_back(*normal);
     }
+
+    vector<Point> PolyCB = window.Getpoints();
 
     float t, tsup, tinf, DX, DY, WN, DN;
     Point C;
+    int i, Nbseg;
 
-    tsup = std::numeric_limits<float>::min();
-    tinf = std::numeric_limits<float>::max();
+    tsup = std::numeric_limits<float>::max();
+    tinf = std::numeric_limits<float>::min();
 
-    DX ←− X2 − X1 ; DY ←− Y2 − Y1
-    Nbseg ←− Nbsom - 1
-    Pour i variant de 1 à Nbseg Faire
-        C ←− Poly[i]
-        DN ←− DX ∗ Normale[i][x] + DY ∗ Normale[i][y]
-        WN ←− (X1 − C[x]) ∗ Normale[i][x] + (Y1 − C[y]) ∗ Normale[i][y]
-        Si (DN = 0) Alors /* Division impossible, le segment est réduit à un point */
-            Renvoyer (WN > 0)
-        Sinon
-            t ←− −(W N)/(DN)
-            Si (DN > 0) Alors /* calcul du max des tinf */
-                Si (t > tinf) Alors
-                    tinf ←− t
-                FinSi
-            Sinon /* calcul du min des tsup */
-                Si (t < tsup) Alors
-                    tsup ←− t
-                FinSi
-            Finsi
-        Finsi
-    FinPour
-    Si (tinf < tsup) Alors /* Intersection possible */
-        Si ((tinf < 0) et (tsup > 1)) Alors /* Segment intérieur */
-            Renvoyer Vrai
-        Sinon
-            Si ((tinf > 1) ou (tsup < 0)) Alors /* Segment extérieur */
-                Renvoyer Faux
-            Sinon
-                Si (tinf < 0) Alors /* A : origine du segment intérieure */
-                    tinf ←− 0
-                Sinon
-                Si (tsup > 1) Alors /* B : extrémité du segment intérieure */
-                    tsup ←− 1
-                FinSi
-            FinSi
-            /* Calcul des nouvelles intersections donnant le segment découpé */
-            X2 ←− X1 + DX ∗ tsup
-            Y2 ←− Y1 + DY ∗ tsup
-            X1 ←− X1 + DX ∗ tinf
-            Y1 ←− Y1 + DY ∗ tinf
-            Renvoyer Vrai
-        FinSi
-    FinSi
-    Sinon /* Segment extérieur */
-        Renvoyer Faux
-    FinSi
+    DX =  p2->Getx() - p1->Getx();
+    DY = p2->Gety() - p1->Gety();
+    Nbseg = window.Getpoints().size();
+    for(i = 0; i< Nbseg; i++){
+        C = PolyCB[i];
+        DN = DX * normals[i].Getx() + DY * normals[i].Gety();
+        WN = (p1->Getx() - C.Getx()) * normals[i].Getx() + (p1->Gety() - C.Gety()) * normals[i].Gety();
+        if(DN == 0) { /* Division impossible, le segment est réduit à un point */
+            return (WN >= 0);
+        }else{
+            t = -(WN)/(DN);
+            printf("\n t : %f", t);
+            if(DN > 0) { /* calcul du max des tinf */
+                if(t > tinf) {
+                    tinf = t;
+                }
+            }else{ /* calcul du min des tsup */
+                if(t < tsup){
+                    tsup = t;
+                }
+            }
+        }
+    }
+    printf("\n tinf : %f - tsup : %f", tinf, tsup);
+    if(tinf < tsup){ /* Intersection possible */
+        if((tinf < 0) && (tsup > 1)){ /* Segment intérieur */
+            return true;
+        }else{
+            if((tinf > 1) | (tsup < 0)){ /* Segment extérieur */
+                return false;
+            }else{
+                if(tinf < 0){ /* A : origine du segment intérieure */
+                    tinf = 0;
+                }else{
+                    if (tsup > 1){ /* B : extrémité du segment intérieure */
+                        tsup = 1;
+                    }
+                }
+                /* Calcul des nouvelles intersections donnant le segment découpé */
+                printf("\Ancien : (%f, %f)->(%f,%f)",p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety() );
+                float x1, x2, y1, y2;
+                x2 = p1->Getx() + DX * tsup;
+                y2 = p1->Gety() + DY * tsup;
+                x1 = p1->Getx() + DX * tinf;
+                y1 = p1->Gety() + DY * tinf;
+                *newP1 = Point(x1,y1);
+                *newP2 = Point(x2,y2);
+                *m = 2;
+
+                p2->Setx(p1->Getx() + DX * tsup);
+                p2->Sety(p1->Gety() + DY * tsup);
+                p1->Setx(p1->Getx() + DX * tinf);
+                p1->Sety(p1->Gety() + DY * tinf);
+                printf("\nNouveau : (%f, %f)->(%f,%f)",p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety() );
+                return true;
+            }
+        }
+    }else{ /* Segment extérieur */
+        return false;
+    }
 }
 
 bool coupe(Point P1, Point P2, Point P3, Point P4)
@@ -477,8 +500,18 @@ void mouse(int button,int state,int x,int y)
                     polywindow.clear();
                     for(int i = 0; i < polygons.size(); i++)
                     {
-                        Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
-                        polywindow.push_back(temp);
+                        //Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
+                        //polywindow.push_back(temp);
+                        for(int j = 0; j < polygons[i].Getpoints().size(); j++){
+                            Point p1;
+                            Point p2;
+                            int m = 1;
+                            bool b = cyrusBeck(&polygons[i].GetpointsPointer()->at(j), &polygons[i].GetpointsPointer()->at((j + 1)%polygons[i].Getpoints().size()), windows[windows.size() - 1], &p1, &p2, &m);
+                            //p1->Setx(p1->Getx() + 100);
+                            printf("\n m : %d", m);
+                            printf("\Reel : (%f, %f)->(%f,%f)",p1.Getx(), p1.Gety(), p2.Getx(), p2.Gety() );
+                            printf("\nCyrus beck : %d", b);
+                        }
                     }
                 }
                 break;
