@@ -23,6 +23,7 @@ class Poly
         void Addpoint(Point p);
         void display();
         bool isHoraire();
+        bool inPolygon(Point p);
 
     protected:
 

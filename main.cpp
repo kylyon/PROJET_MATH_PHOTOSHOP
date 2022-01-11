@@ -221,7 +221,7 @@ void newWindow()
     mode = 2;
 }
 
-bool cyrusBeck(Point *p1, Point *p2, Poly window, Point *newP1, Point *newP2, int *m)
+bool cyrusBeck(Point *p1, Point *p2, Poly window, Poly *temp)
 {
     vector<Point> normals;
     Point *normal;
@@ -291,14 +291,15 @@ bool cyrusBeck(Point *p1, Point *p2, Poly window, Point *newP1, Point *newP2, in
                 y2 = p1->Gety() + DY * tsup;
                 x1 = p1->Getx() + DX * tinf;
                 y1 = p1->Gety() + DY * tinf;
-                *newP1 = Point(x1,y1);
-                *newP2 = Point(x2,y2);
-                *m = 2;
+                Point newP1 = Point(x1,y1);
+                Point newP2 = Point(x2,y2);
+                temp->Addpoint(newP1);
+                temp->Addpoint(newP2);
 
-                p2->Setx(p1->Getx() + DX * tsup);
+                /*p2->Setx(p1->Getx() + DX * tsup);
                 p2->Sety(p1->Gety() + DY * tsup);
                 p1->Setx(p1->Getx() + DX * tinf);
-                p1->Sety(p1->Gety() + DY * tinf);
+                p1->Sety(p1->Gety() + DY * tinf);*/
                 printf("\nNouveau : (%f, %f)->(%f,%f)",p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety() );
                 return true;
             }
@@ -500,18 +501,28 @@ void mouse(int button,int state,int x,int y)
                     polywindow.clear();
                     for(int i = 0; i < polygons.size(); i++)
                     {
+                        printf("\nYYYYYAAAAAAAAAAAABABOu");
                         //Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
                         //polywindow.push_back(temp);
+                        Poly temp = Poly(Color(1.0,1.0,1.0));
                         for(int j = 0; j < polygons[i].Getpoints().size(); j++){
                             Point p1;
                             Point p2;
                             int m = 1;
-                            bool b = cyrusBeck(&polygons[i].GetpointsPointer()->at(j), &polygons[i].GetpointsPointer()->at((j + 1)%polygons[i].Getpoints().size()), windows[windows.size() - 1], &p1, &p2, &m);
+                            bool b = cyrusBeck(&polygons[i].GetpointsPointer()->at(j), &polygons[i].GetpointsPointer()->at((j + 1)%polygons[i].Getpoints().size()), windows[windows.size() - 1], &temp);
                             //p1->Setx(p1->Getx() + 100);
                             printf("\n m : %d", m);
                             printf("\Reel : (%f, %f)->(%f,%f)",p1.Getx(), p1.Gety(), p2.Getx(), p2.Gety() );
                             printf("\nCyrus beck : %d", b);
                         }
+                        for(int j = 0; j < windows[windows.size() - 1].Getpoints().size(); j++)
+                        {
+                            if(temp.inPolygon(windows[windows.size() - 1].Getpoints()[j])){
+                                temp.Addpoint(windows[windows.size() - 1].Getpoints()[j]);
+                            }
+                        }
+
+                        polywindow.push_back(temp);
                     }
                 }
                 break;

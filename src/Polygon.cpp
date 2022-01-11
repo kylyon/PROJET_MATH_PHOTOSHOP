@@ -74,6 +74,11 @@ bool Poly::isHoraire()
     return res > 0;
 }
 
+bool Poly::inPolygon(Point p)
+{
+    return xMin < p.Getx() && p.Getx() < xMax && yMin < p.Gety() && p.Gety() < yMax;
+}
+
 Poly::~Poly()
 {
     //dtor
