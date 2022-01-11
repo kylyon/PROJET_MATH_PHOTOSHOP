@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <vector>
 #include <cmath>
+#include <limits>
 #include "Point.h"
 #include "Polygon.h"
 #include "Color.h"
@@ -222,11 +223,66 @@ void newWindow()
 
 bool cyrusBeck(Point p1, Point p2, Poly window)
 {
-    vector<Point> normal;
-    for(int i = 0; i < window.Getpoints().size(); i++)
+    float dx = F1.Getx() - F.Getx();
+    float dy = F1.Gety() - F.Gety();
+    Point *normal = new Point(dy, -dx);
+    if(!window.isHoraire())
     {
-        //calcule des normales
+        normal = new Point(-dy, dx);
     }
+
+    float t, tsup, tinf, DX, DY, WN, DN;
+    Point C;
+
+    tsup = std::numeric_limits<float>::min();
+    tinf = std::numeric_limits<float>::max();
+
+    DX ←− X2 − X1 ; DY ←− Y2 − Y1
+    Nbseg ←− Nbsom - 1
+    Pour i variant de 1 à Nbseg Faire
+        C ←− Poly[i]
+        DN ←− DX ∗ Normale[i][x] + DY ∗ Normale[i][y]
+        WN ←− (X1 − C[x]) ∗ Normale[i][x] + (Y1 − C[y]) ∗ Normale[i][y]
+        Si (DN = 0) Alors /* Division impossible, le segment est réduit à un point */
+            Renvoyer (WN > 0)
+        Sinon
+            t ←− −(W N)/(DN)
+            Si (DN > 0) Alors /* calcul du max des tinf */
+                Si (t > tinf) Alors
+                    tinf ←− t
+                FinSi
+            Sinon /* calcul du min des tsup */
+                Si (t < tsup) Alors
+                    tsup ←− t
+                FinSi
+            Finsi
+        Finsi
+    FinPour
+    Si (tinf < tsup) Alors /* Intersection possible */
+        Si ((tinf < 0) et (tsup > 1)) Alors /* Segment intérieur */
+            Renvoyer Vrai
+        Sinon
+            Si ((tinf > 1) ou (tsup < 0)) Alors /* Segment extérieur */
+                Renvoyer Faux
+            Sinon
+                Si (tinf < 0) Alors /* A : origine du segment intérieure */
+                    tinf ←− 0
+                Sinon
+                Si (tsup > 1) Alors /* B : extrémité du segment intérieure */
+                    tsup ←− 1
+                FinSi
+            FinSi
+            /* Calcul des nouvelles intersections donnant le segment découpé */
+            X2 ←− X1 + DX ∗ tsup
+            Y2 ←− Y1 + DY ∗ tsup
+            X1 ←− X1 + DX ∗ tinf
+            Y1 ←− Y1 + DY ∗ tinf
+            Renvoyer Vrai
+        FinSi
+    FinSi
+    Sinon /* Segment extérieur */
+        Renvoyer Faux
+    FinSi
 }
 
 bool coupe(Point P1, Point P2, Point P3, Point P4)
