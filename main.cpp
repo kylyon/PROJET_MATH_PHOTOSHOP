@@ -166,19 +166,19 @@ void processColorEvents(int option) {
     switch (option) {
 	    case 1 :
 	        color = new Color(1.0f,0.0f,0.0f);
-	        newPolygon();
+	        //newPolygon();
 	        break;
 		case 2 :
 		    color = new Color(0.0f,1.0f,0.0f);
-			newPolygon();
+			//newPolygon();
 			break;
 		case 3 :
 			color = new Color(0.0f,0.0f,1.0f);
-			newPolygon();
+			//newPolygon();
 			break;
 		case 4 :
 		    color = new Color(1.0f,1.0f,1.0f);
-			newPolygon();
+			//newPolygon();
 			break;
 	}
 }
@@ -477,12 +477,94 @@ void RemplissageRectEG(Poly pol, Point RectEG[2], Color CR) {
     float dy = F1.Gety() - F.Gety();
     Point *normal = new Point(dy, -dx);
     if(!window.isHoraire())
+bool inPolygon(Point p1, Point p2, Poly poly)
+{
+    vector<Point> normals;
+    Point *normal;
+    for(int k = 0; k < poly.Getpoints().size(); k++)
     {
-        normal = new Point(-dy, dx);
+        float dx = poly.Getpoints()[(k + 1)%poly.Getpoints().size()].Getx() - poly.Getpoints()[k].Getx();
+        float dy = poly.Getpoints()[(k + 1)%poly.Getpoints().size()].Gety() - poly.Getpoints()[k].Gety();
+        normal = new Point(dy, -dx);
+        if(!poly.isHoraire())
+        {
+            normal = new Point(-dy, dx);
+        }
+        normals.push_back(*normal);
     }
 
+    vector<Point> PolyCB = poly.Getpoints();
+
     float t, tsup, tinf, DX, DY, WN, DN;
+    float x1, x2, y1, y2;
+    Point newP1, newP2;
     Point C;
+    int i, Nbseg;
+
+    tsup = std::numeric_limits<float>::max();
+    tinf = (float)std::numeric_limits<int>::min();
+    //printf("\n tsup %f - tinf %f", tsup, tinf);
+
+    DX = p2.Getx() - p1.Getx();
+    DY = p2.Gety() - p1.Gety();
+    Nbseg = poly.Getpoints().size();
+    for(i = 0; i< Nbseg; i++){
+        C = PolyCB[i];
+        DN = DX * normals[i].Getx() + DY * normals[i].Gety();
+        WN = (p1.Getx() - C.Getx()) * normals[i].Getx() + (p1.Gety() - C.Gety()) * normals[i].Gety();
+        //printf("\n DN %f - WN %f", DN, WN);
+        if(DN == 0) { /* Division impossible, le segment est réduit à un point */
+            return (WN >= 0);
+        }else{
+            t = -(WN)/(DN);
+            printf("\n t : %f", t);
+            if(DN > 0) { /* calcul du max des tinf */
+                if(t > tinf) {
+                    tinf = t;
+                }
+            }else{ /* calcul du min des tsup */
+                if(t < tsup){
+                    tsup = t;
+                }
+            }
+        }
+    }
+    //printf("\n tinf : %f - tsup : %f", tinf, tsup);
+    if(tinf < tsup){ /* Intersection possible */
+        if((tinf < 0) && (tsup > 1)){ /* Segment intérieur */
+            return true;
+        }else{
+            if((tinf > 1) | (tsup < 0)){ /* Segment extérieur */
+                return false;
+            }else{
+                if(tinf < 0){ /* A : origine du segment intérieure */
+                    return true;
+                }
+                return false;
+            }
+        }
+    }else{ /* Segment extérieur */
+        return false;
+    }
+}
+
+bool cyrusBeck(Point *p1, Point *p2, Poly window, Poly *temp)
+{
+    vector<Point> normals;
+    Point *normal;
+    for(int k = 0; k < window.Getpoints().size(); k++)
+    {
+        float dx = window.Getpoints()[(k + 1)%window.Getpoints().size()].Getx() - window.Getpoints()[k].Getx();
+        float dy = window.Getpoints()[(k + 1)%window.Getpoints().size()].Gety() - window.Getpoints()[k].Gety();
+        normal = new Point(dy, -dx);
+        if(!window.isHoraire())
+        {
+            normal = new Point(-dy, dx);
+        }
+        normals.push_back(*normal);
+    }
+
+    vector<Point> PolyCB = window.Getpoints();
 
     tsup = std::numeric_limits<float>::min();
     tinf = std::numeric_limits<float>::max();
@@ -535,6 +617,77 @@ void RemplissageRectEG(Poly pol, Point RectEG[2], Color CR) {
         Renvoyer Fau
     FinSi
 }*/
+    float t, tsup, tinf, DX, DY, WN, DN;
+    float x1, x2, y1, y2;
+    Point newP1, newP2;
+    Point C;
+    int i, Nbseg;
+
+    tsup = std::numeric_limits<float>::max();
+    tinf = std::numeric_limits<float>::min();
+
+    DX = p2->Getx() - p1->Getx();
+    DY = p2->Gety() - p1->Gety();
+    Nbseg = window.Getpoints().size();
+    for(i = 0; i< Nbseg; i++){
+        C = PolyCB[i];
+        DN = DX * normals[i].Getx() + DY * normals[i].Gety();
+        WN = (p1->Getx() - C.Getx()) * normals[i].Getx() + (p1->Gety() - C.Gety()) * normals[i].Gety();
+        if(DN == 0) { /* Division impossible, le segment est réduit à un point */
+            return (WN >= 0);
+        }else{
+            t = -(WN)/(DN);
+            //printf("\n t : %f", t);
+            if(DN > 0) { /* calcul du max des tinf */
+                if(t > tinf) {
+                    tinf = t;
+                }
+            }else{ /* calcul du min des tsup */
+                if(t < tsup){
+                    tsup = t;
+                }
+            }
+        }
+    }
+    //printf("\n tinf : %f - tsup : %f", tinf, tsup);
+    if(tinf < tsup){ /* Intersection possible */
+        if((tinf < 0) && (tsup > 1)){ /* Segment intérieur */
+            return true;
+        }else{
+            if((tinf > 1) | (tsup < 0)){ /* Segment extérieur */
+                return false;
+            }else{
+                if(tinf < 0){ /* A : origine du segment intérieure */
+                    tinf = 0;
+                }else{
+                    if (tsup > 1){ /* B : extrémité du segment intérieure */
+                        tsup = 1;
+                    }
+                }
+                /* Calcul des nouvelles intersections donnant le segment découpé */
+                //printf("\nAncien : (%f, %f)->(%f,%f)",p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety() );
+
+                x2 = p1->Getx() + DX * tsup;
+                y2 = p1->Gety() + DY * tsup;
+                x1 = p1->Getx() + DX * tinf;
+                y1 = p1->Gety() + DY * tinf;
+                newP1 = Point(x1,y1);
+                newP2 = Point(x2,y2);
+                temp->Addpoint(newP1);
+                temp->Addpoint(newP2);
+
+                /*p2->Setx(p1->Getx() + DX * tsup);
+                p2->Sety(p1->Gety() + DY * tsup);
+                p1->Setx(p1->Getx() + DX * tinf);
+                p1->Sety(p1->Gety() + DY * tinf);*/
+                //printf("\nNouveau : (%f, %f)->(%f,%f)",p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety() );
+                return true;
+            }
+        }
+    }else{ /* Segment extérieur */
+        return false;
+    }
+}
 
 bool coupe(Point P1, Point P2, Point P3, Point P4)
 {
@@ -703,6 +856,12 @@ Poly sutherlandHodgman(Poly p, Poly window)
 
 }
 
+Color GetColorPixel(int x, int y) { // 0/0 réel est en x+250 et y+250
+    GLubyte data[3];
+    glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE , &data);
+    return Color((float)data[0]/255, (float)data[1]/255, (float)data[2]/255);
+}
+
 void mouse(int button,int state,int x,int y)
 {
 
@@ -713,6 +872,7 @@ void mouse(int button,int state,int x,int y)
 		yClic = -y + 250;
 		xContext = x;
 		yContext = y;
+		printf("\n%d, %d", xClic, yClic);
 		if(mode != 0){
             Point *p = new Point(xClic, yClic);
             switch(mode)
@@ -721,23 +881,48 @@ void mouse(int button,int state,int x,int y)
                 polygons[polygons.size() - 1].Addpoint(*p);
                 break;
             case 2:
-                printf("yz");
+
                 windows[windows.size() - 1].Addpoint(*p);
-                printf("\nSize : %d",  polygons.size());
                 if(windows[windows.size() - 1].Getpoints().size() >= 3)
                 {
-                    printf("yaaaa");
                     polywindow.clear();
                     for(int i = 0; i < polygons.size(); i++)
                     {
-                        Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
+                        //Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
+                        //polywindow.push_back(temp);
+                        Poly temp = Poly(Color(1.0,1.0,1.0));
+                        for(int j = 0; j < polygons[i].Getpoints().size(); j++){
+                            Point p1;
+                            Point p2;
+                            int m = 1;
+                            bool b = cyrusBeck(&polygons[i].GetpointsPointer()->at(j), &polygons[i].GetpointsPointer()->at((j + 1)%polygons[i].Getpoints().size()), windows[windows.size() - 1], &temp);
+                        }
+                        printf("\n Size poly : %d - Size window : %d - Size polywindow : %d",polygons.size(), windows.size(), polywindow.size() );
+
+                        for(int j = 0; j < windows.back().Getpoints().size(); j++)
+                        {
+                            float tempX1, tempY1, tempX2, tempY2;
+                            tempX1 = windows.back().Getpoints()[j].Getx();
+                            tempY1 = windows.back().Getpoints()[j].Gety();
+                            tempX2 = 250;
+                            tempY2 = windows.back().Getpoints()[j].Getx();
+
+                            bool inpoly = inPolygon(Point(tempX1, tempY1), Point(tempX2, tempY2), polygons[i]);
+                            printf("\n (%f, %f) in polygon ? %d", tempX1, tempY1, inpoly);
+                            if(inpoly)
+                            {
+                                temp.Addpoint(windows.back().Getpoints()[j]);
+                            }
+
+                        }
+                        temp.sortedPoints();
                         polywindow.push_back(temp);
                     }
                 }
                 break;
             }
 		}
-        printf("Avant\n");
+        printf("\nAvant\n");
 		affichage();
 		return;
 	}
