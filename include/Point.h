@@ -1,6 +1,8 @@
 #ifndef POINT_H
 #define POINT_H
 #include <GL/glut.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 class Point
 {
@@ -13,6 +15,7 @@ class Point
         void Setx(float val) { m_x = val; }
         float Gety() { return m_y; }
         void Sety(float val) { m_y = val; }
+        bool isEqual(Point p);
 
     protected:
 

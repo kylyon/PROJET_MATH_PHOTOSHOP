@@ -18,8 +18,14 @@ class Poly
         virtual ~Poly();
 
         vector<Point> Getpoints() { return m_points; }
+        vector<Point> *GetpointsPointer() { return &m_points; }
+        Color Getcolor() { return color; }
         void Addpoint(Point p);
         void display();
+        bool isHoraire();
+        bool contains(Point p);
+        Point GetMiddle();
+        void sortedPoints();
 
     protected:
 

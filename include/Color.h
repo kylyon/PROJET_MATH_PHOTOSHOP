@@ -24,4 +24,11 @@ class Color
         float m_blue;
 };
 
+inline bool operator== (Color a, Color b) {
+    if(a.Getred() == b.Getred() && a.Getgreen() == b.Getgreen() && a.Getblue() == b.Getblue()) {
+        return true;
+    }
+    return false;
+}
+
 #endif // COLOR_H
