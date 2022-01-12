@@ -44,9 +44,11 @@
 			<Add library="gdi32" />
 			<Add directory="C:/Program Files (x86)/CodeBlocks/MinGW/lib" />
 		</Linker>
+		<Unit filename="include/Color.h" />
 		<Unit filename="include/Point.h" />
 		<Unit filename="include/Polygon.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/Color.cpp" />
 		<Unit filename="src/Point.cpp" />
 		<Unit filename="src/Polygon.cpp" />
 		<Extensions />

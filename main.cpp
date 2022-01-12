@@ -22,11 +22,17 @@
 #include <vector>
 #include <cmath>
 #include <limits>
+#include <stack>
+#include <list>
+#include <tuple>
 #include "Point.h"
 #include "Polygon.h"
 #include "Color.h"
 
+using std::tuple;
+using std::stack;
 using std::vector;
+
 
 static int window;
 int menu, color_menu, color_polygon_menu, color_window_menu, color_cut_polygon_menu;
@@ -53,10 +59,18 @@ void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
 void createColorMenu();
+void RemplissageLCA(Poly polygon, Color CR);
+void CreatSI(Poly polygon);
 void processMenuEvents(int option);
 void processColorEvents(int option);
+void affichePixel(int x, int y, Color CR);
+void RemplissageRegionConnexite4A(int x, int y, Color CC, Color CR);
+void RemplissageRegionConnexite4B(int x, int y, Color CC, Color CR);
+void RemplissageLigne(int x, int y, Color cc, Color cr);
+void afficheLigne(int xg, int xd, int y, Color cr);
 void newPolygon();
 void newWindow();
+Color GetColorPixel(int x, int y);
 bool coupe(Point P1, Point P2, Point P3, Point P4);
 bool visible(Point S, Point F, Point F1, bool antiHoraire);
 Point intersection(Point P1, Point P2, Point P3, Point P4);
@@ -81,7 +95,7 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 	/* Initialisation d'OpenGL */
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glColor3f(1.0, 1.0, 1.0);       // couleur: blanc
-	glPointSize(2.0);               // taille d'un point: 2px
+	glPointSize(1.0);               // taille d'un point: 2px
 
 	/* Enregistrement des fonctions de rappel
      => initialisation des fonctions callback appel�es par glut */
@@ -192,6 +206,11 @@ void processMenuEvents(int option) {
             break;
         case 5 :
             printf("5");
+            Point pt = Point(0, 0);
+            Color cr = Color(0.8, 0.8, 0.8);
+            RemplissageRegionConnexite4B(0, 0, Color(1.0, 0.0, 0.0), cr);
+            //RemplissageLigne((int)pt.Getx(), (int)pt.Gety(), Color(1.0, 0.0, 0.0), cr);
+            //RemplissageRegionConnexite4(pt, Color(1.0, 0.0, 0.0), cr);
             break;
 	}
 }
@@ -217,7 +236,17 @@ void affichage(){
         polywindow[i].display();
     }
     // On force l'affichage du r�sultat
+
+    glBegin(GL_POINTS);
+    glColor3f(0.0, 0.0, 1.0);
+    glVertex2f(0, 0);
+    glEnd();
     glFlush();
+
+    glFlush();
+
+    printf("\nCouleur centre: %f, %f, %f \n", GetColorPixel(250, 250).Getred(), GetColorPixel(250, 250).Getgreen(), GetColorPixel(250, 250).Getblue());
+
 }
 
 void newPolygon()
@@ -234,9 +263,217 @@ void newWindow()
     mode = 2;
 }
 
-bool cyrusBeck(Point p1, Point p2, Poly window)
+
+
+Color GetColorPixel(int x, int y) { // 0/0 réel est en x+250 et y+250
+    GLubyte data[3];
+    glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE , &data);
+    return Color((float)data[0]/255, (float)data[1]/255, (float)data[2]/255);
+}
+
+void afficheLigne(int xg, int xd, int y, Color cr) {
+    for(int i = xg; i < xd; i++) {
+        glBegin(GL_POINTS);
+        glColor3f(cr.Getred(), cr.Getgreen(), cr.Getblue());
+        glVertex2f(i, y);
+        glEnd();
+        glFlush();
+    }
+}
+
+//Creation de la structure SI
+void CreatSI(Poly polygon) {
+    //Tableau de liste chainée
+    //taille du tableau : max du polygon en Y.
+
+}
+
+
+void RemplissageLCA(Poly polygon, Color CR) {
+    //Structure SI
+
+    // Initialisation de la structure LCA à vide ici
+
+
+}
+
+
+void affichePixel(int x, int y, Color CR) {
+    glBegin(GL_POINTS);
+    glColor3f(CR.Getred(), CR.Getgreen(), CR.Getblue());
+    glVertex2f(x, y);
+    glEnd();
+    glFlush();
+}
+
+
+//Probleme avec ce remplissage: probleme de dépassement de capacité due à la récursivité (ne fonctionne que sur les petits polygones)
+void RemplissageRegionConnexite4A(int x, int y, Color CC, Color CR) { // point, couleur contour, couleur remplissage
+    Color CP;
+    CP = GetColorPixel(x+250, y+250);
+    if(!(CP == CC) && !(CP == CR)) {
+        affichePixel(x, y, CR);
+        RemplissageRegionConnexite4A(x, y-1, CC, CR);
+        RemplissageRegionConnexite4A(x-1, y, CC, CR);
+        RemplissageRegionConnexite4A(x, y+1, CC, CR);
+        RemplissageRegionConnexite4A(x+1, y, CC, CR);
+    }
+}
+
+//Moins de probleme de capacité grace à la pile mais crash sur des gros polygones tout de meme
+void RemplissageRegionConnexite4B(int x, int y, Color CC, Color CR) {
+    Color CP;
+    stack<Point> p; //Initialisation de la pile à vide
+    Point point = Point(x, y);
+    p.push(point); // On empile le point dans p
+    while(!p.empty()) { // Tant qu'il y a un point à traiter
+        Point sommet = p.top(); //Recupere le sommet de la pile
+        x = (int)sommet.Getx();
+        y = (int)sommet.Gety();
+        p.pop(); // Depile
+        CP = GetColorPixel(x+250, y+250);
+        if(!(CP == CC) && !(CP == CR)) {
+            affichePixel(x, y, CR);
+        }
+        CP = GetColorPixel(x+250, y+250-1);
+        if(!(CP == CC) && !(CP == CR)) {
+            Point temp = Point(x, y-1);
+            p.push(temp);
+        }
+        CP = GetColorPixel(x+250-1, y+250);
+        if(!(CP == CC) && !(CP == CR)) {
+            Point temp = Point(x-1, y);
+            p.push(temp);
+        }
+        CP = GetColorPixel(x+250, y+250+1);
+        if(!(CP == CC) && !(CP == CR)) {
+            Point temp = Point(x, y+1);
+            p.push(temp);
+        }
+        CP = GetColorPixel(x+250+1, y+250);
+        if(!(CP == CC) && !(CP == CR)) {
+            Point temp = Point(x+1, y);
+            p.push(temp);
+        }
+    }
+}
+
+void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, couleur contour = rouge, couleur remplissage = grise
+    stack<Point> p; //Initialisation de la pile à vide
+    Color CP, CPd, CPg; //couleur du pixel
+    int xd, xg;
+    Point point = Point(x, y);
+    p.push(point); // On empile le point dans p
+    while(!p.empty()) { // Tant qu'il y a un point à traiter
+        Point sommet = p.top(); //Recupere le sommet de la pile
+        x = (int)sommet.Getx();
+        y = (int)sommet.Gety();
+        printf("\n x: %d y: %d \n", x, y);
+        printf("\n taille de la pile : %d \n", p.size());
+        p.pop(); // Depile
+        printf("\n taille de la pile : %d \n", p.size());
+        CP = GetColorPixel(x+250, y+250);
+        //printf("%d, %d, %d \n", CP.Getred(), CP.Getgreen(), CP.Getblue());
+
+        // On determine les abscisses extremes xg et xd de la ligne de balayage y
+        //recherche de l'extreme droite
+        xd = x + 1;
+        CPd = CP;
+        while(!(CPd == CC)) {
+            xd += 1;
+            CPd = GetColorPixel(xd+250, y+250);
+        }
+        xd -= 1;
+
+        // Recherche de l'extreme gauche
+        xg = x - 1;
+        CPg = CP;
+        while(!(CPg == CC) && xg > -250) {
+            xg = xg - 1;
+            CPg = GetColorPixel(xg+250, y+250);
+        }
+        xg += 1;
+
+        //Affichage de la ligne
+        afficheLigne(xg, xd, y, CR);
+
+        //Recherche de nouveau germe sur la ligne de balayage au-dessus
+
+        /*x = xd;
+        glBegin(GL_POINTS);
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glVertex2f(x, y+1);
+        glEnd();
+        glFlush();
+        CP = GetColorPixel(x+250, y+1+250);
+        printf("%d, %f, %f, %f \n", x, CP.Getred(), CP.Getgreen(), CP.Getblue());*/
+        x = xd;
+        CP = GetColorPixel(x+250, y+250+1);
+        //printf("%d, %f, %f, %f \n", x, CPd.Getred(), CPd.Getgreen(), CPd.Getblue());
+        //printf("%d, %f, %f, %f \n", xd, CP.Getred(), CP.Getgreen(), CP.Getblue());
+        while(x >= xg) {
+            while(((CP == CC) || (CP == CR)) && (x >= xg)) {
+                x -= 1;
+                CP = GetColorPixel(x+250, y+1+250);
+            }
+
+            printf("%d, %d, %f, %f, %f \n", x, xg, CP.Getred(), CP.Getgreen(), CP.Getblue());
+            if((x >= xg) && !(CP == CC) && !(CP == CR)) {
+                //On empile le nouveau germe au dessus trouvé);
+                printf("/n X: %d Point numero %d\n", x, y+1);
+                Point tempo = Point(x, y+1);
+                p.push(tempo);
+            }
+            while(!(CP == CC) && (x >= xg)) {
+                x = x-1;
+                CP = GetColorPixel(x+250, y+1+250);
+            }
+            printf("%d, %d, %f, %f, %f \n", x, xg, CP.Getred(), CP.Getgreen(), CP.Getblue());
+
+        }
+
+        //Recherche de nouveau germe sur la ligne de balayage en-dessous
+      /*  x = xd;
+        CP = GetColorPixel(x+250, y+250-1);
+        while(x >= xg) {
+            while(((CP == CC) || (CP == CR)) && (x >= xg)) {
+                x = x-1;
+                CP = GetColorPixel(x+250, y-1+250);
+            }
+            if((x >= xg) && !(CP == CC) && !(CP == CR)) {
+                //On empile le nouveau germe en dessous trouvé
+                Point tempo = Point(x, y-1);
+                p.push(tempo);
+            }
+            while(!(CP == CC) && (x >= xg)) {
+                x = x - 1;
+                CP = GetColorPixel(x+250, y-1+250);
+            }
+        }*/
+        //printf("%d, %f, %f, %f \n", xd, CPd.Getred(), CPd.Getgreen(), CPd.Getblue());
+        //recherche de l'extreme gauche
+    }
+}
+
+int* rectangleEnglobant(Poly poly) {
+    int RectEG[2];
+    //recuperer min et max d'un polygone
+    return RectEG;
+}
+
+bool interieur(int x, int y, Poly pol) {
+
+}
+
+
+void RemplissageRectEG(Poly pol, Point RectEG[2], Color CR) {
+    int x, y, xMin, xMax, yMin, yMax;
+
+}
+
+/*bool cyrusBeck(Point p1, Point p2, Poly window)
 {
-    float dx = F1.Getx() - F.Getx();
+    /*float dx = F1.Getx() - F.Getx();
     float dy = F1.Gety() - F.Gety();
     Point *normal = new Point(dy, -dx);
     if(!window.isHoraire())
@@ -257,35 +494,35 @@ bool cyrusBeck(Point p1, Point p2, Poly window)
         DN ←− DX ∗ Normale[i][x] + DY ∗ Normale[i][y]
         WN ←− (X1 − C[x]) ∗ Normale[i][x] + (Y1 − C[y]) ∗ Normale[i][y]
         Si (DN = 0) Alors /* Division impossible, le segment est réduit à un point */
-            Renvoyer (WN > 0)
+       /*     Renvoyer (WN > 0)
         Sinon
             t ←− −(W N)/(DN)
-            Si (DN > 0) Alors /* calcul du max des tinf */
+            Si (DN > 0) Alors /* calcul du max des tinf
                 Si (t > tinf) Alors
                     tinf ←− t
                 FinSi
-            Sinon /* calcul du min des tsup */
+            Sinon /* calcul du min des tsup
                 Si (t < tsup) Alors
                     tsup ←− t
                 FinSi
             Finsi
         Finsi
     FinPour
-    Si (tinf < tsup) Alors /* Intersection possible */
-        Si ((tinf < 0) et (tsup > 1)) Alors /* Segment intérieur */
+    Si (tinf < tsup) Alors /* Intersection possible
+        Si ((tinf < 0) et (tsup > 1)) Alors /* Segment intérieur
             Renvoyer Vrai
         Sinon
-            Si ((tinf > 1) ou (tsup < 0)) Alors /* Segment extérieur */
+            Si ((tinf > 1) ou (tsup < 0)) Alors /* Segment extérieur
                 Renvoyer Faux
             Sinon
-                Si (tinf < 0) Alors /* A : origine du segment intérieure */
+                Si (tinf < 0) Alors /* A : origine du segment intérieure
                     tinf ←− 0
                 Sinon
-                Si (tsup > 1) Alors /* B : extrémité du segment intérieure */
+                Si (tsup > 1) Alors /* B : extrémité du segment intérieure
                     tsup ←− 1
                 FinSi
             FinSi
-            /* Calcul des nouvelles intersections donnant le segment découpé */
+            /* Calcul des nouvelles intersections donnant le segment découpé
             X2 ←− X1 + DX ∗ tsup
             Y2 ←− Y1 + DY ∗ tsup
             X1 ←− X1 + DX ∗ tinf
@@ -293,10 +530,11 @@ bool cyrusBeck(Point p1, Point p2, Poly window)
             Renvoyer Vrai
         FinSi
     FinSi
-    Sinon /* Segment extérieur */
-        Renvoyer Faux
+    Sinon /* Segment extérieur
+
+        Renvoyer Fau
     FinSi
-}
+}*/
 
 bool coupe(Point P1, Point P2, Point P3, Point P4)
 {
@@ -473,6 +711,8 @@ void mouse(int button,int state,int x,int y)
 	{
 		xClic = x - 250; //on sauvegarde la position de la souris
 		yClic = -y + 250;
+		xContext = x;
+		yContext = y;
 		if(mode != 0){
             Point *p = new Point(xClic, yClic);
             switch(mode)
@@ -533,6 +773,7 @@ void clavier(unsigned char touche,int x,int y){
 
 		case 'q':/* Quitter le programme */
 			exit(0);
+			break;
 	}
 }
 
