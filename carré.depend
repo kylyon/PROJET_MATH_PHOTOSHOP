@@ -112,3 +112,53 @@
 	"Polygon.h"
 	"Color.h"
 
+1641664512 source:d:\documents\cours\7eme semestre\math\projet\src\color.cpp
+	"Color.h"
+
+1641939472 d:\documents\cours\7eme semestre\math\projet\include\color.h
+
+1641986695 source:d:\documents\cours\7eme semestre\math\projet\src\point.cpp
+	"Point.h"
+	<cmath>
+
+1641938293 d:\documents\cours\7eme semestre\math\projet\include\point.h
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+
+1642011814 source:d:\documents\cours\7eme semestre\math\projet\src\polygon.cpp
+	"Polygon.h"
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	<limits>
+	<cmath>
+	"Point.h"
+	"Color.h"
+
+1641987652 d:\documents\cours\7eme semestre\math\projet\include\polygon.h
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+	"Color.h"
+
+1642024052 source:d:\documents\cours\7eme semestre\math\projet\main.cpp
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	<cmath>
+	<limits>
+	<stack>
+	<list>
+	<tuple>
+	"Point.h"
+	"Polygon.h"
+	"Color.h"
+

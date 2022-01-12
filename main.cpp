@@ -471,12 +471,6 @@ void RemplissageRectEG(Poly pol, Point RectEG[2], Color CR) {
 
 }
 
-/*bool cyrusBeck(Point p1, Point p2, Poly window)
-{
-    /*float dx = F1.Getx() - F.Getx();
-    float dy = F1.Gety() - F.Gety();
-    Point *normal = new Point(dy, -dx);
-    if(!window.isHoraire())
 bool inPolygon(Point p1, Point p2, Poly poly)
 {
     vector<Point> normals;
@@ -566,57 +560,6 @@ bool cyrusBeck(Point *p1, Point *p2, Poly window, Poly *temp)
 
     vector<Point> PolyCB = window.Getpoints();
 
-    tsup = std::numeric_limits<float>::min();
-    tinf = std::numeric_limits<float>::max();
-
-    DX ←− X2 − X1 ; DY ←− Y2 − Y1
-    Nbseg ←− Nbsom - 1
-    Pour i variant de 1 à Nbseg Faire
-        C ←− Poly[i]
-        DN ←− DX ∗ Normale[i][x] + DY ∗ Normale[i][y]
-        WN ←− (X1 − C[x]) ∗ Normale[i][x] + (Y1 − C[y]) ∗ Normale[i][y]
-        Si (DN = 0) Alors /* Division impossible, le segment est réduit à un point */
-       /*     Renvoyer (WN > 0)
-        Sinon
-            t ←− −(W N)/(DN)
-            Si (DN > 0) Alors /* calcul du max des tinf
-                Si (t > tinf) Alors
-                    tinf ←− t
-                FinSi
-            Sinon /* calcul du min des tsup
-                Si (t < tsup) Alors
-                    tsup ←− t
-                FinSi
-            Finsi
-        Finsi
-    FinPour
-    Si (tinf < tsup) Alors /* Intersection possible
-        Si ((tinf < 0) et (tsup > 1)) Alors /* Segment intérieur
-            Renvoyer Vrai
-        Sinon
-            Si ((tinf > 1) ou (tsup < 0)) Alors /* Segment extérieur
-                Renvoyer Faux
-            Sinon
-                Si (tinf < 0) Alors /* A : origine du segment intérieure
-                    tinf ←− 0
-                Sinon
-                Si (tsup > 1) Alors /* B : extrémité du segment intérieure
-                    tsup ←− 1
-                FinSi
-            FinSi
-            /* Calcul des nouvelles intersections donnant le segment découpé
-            X2 ←− X1 + DX ∗ tsup
-            Y2 ←− Y1 + DY ∗ tsup
-            X1 ←− X1 + DX ∗ tinf
-            Y1 ←− Y1 + DY ∗ tinf
-            Renvoyer Vrai
-        FinSi
-    FinSi
-    Sinon /* Segment extérieur
-
-        Renvoyer Fau
-    FinSi
-}*/
     float t, tsup, tinf, DX, DY, WN, DN;
     float x1, x2, y1, y2;
     Point newP1, newP2;
@@ -856,12 +799,6 @@ Poly sutherlandHodgman(Poly p, Poly window)
 
 }
 
-Color GetColorPixel(int x, int y) { // 0/0 réel est en x+250 et y+250
-    GLubyte data[3];
-    glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE , &data);
-    return Color((float)data[0]/255, (float)data[1]/255, (float)data[2]/255);
-}
-
 void mouse(int button,int state,int x,int y)
 {
 
@@ -872,7 +809,7 @@ void mouse(int button,int state,int x,int y)
 		yClic = -y + 250;
 		xContext = x;
 		yContext = y;
-		printf("\n%d, %d", xClic, yClic);
+		//printf("\n%d, %d", xClic, yClic);
 		if(mode != 0){
             Point *p = new Point(xClic, yClic);
             switch(mode)
