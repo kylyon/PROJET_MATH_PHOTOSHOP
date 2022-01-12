@@ -23,7 +23,9 @@ class Poly
         void Addpoint(Point p);
         void display();
         bool isHoraire();
-        bool inPolygon(Point p);
+        bool contains(Point p);
+        Point GetMiddle();
+        void sortedPoints();
 
     protected:
 
