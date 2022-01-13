@@ -74,6 +74,7 @@ bool inPolygon(Point p1, Point p2, Poly poly);
 
 void newPolygon();
 void newWindow();
+void Fenetrage(int mode);
 Color GetColorPixel(int x, int y);
 bool coupe(Point P1, Point P2, Point P3, Point P4);
 bool visible(Point S, Point F, Point F1, bool antiHoraire);
@@ -115,24 +116,45 @@ int main(int argc, char **argv){
 
     //printf("%f, %f, %f", color->Getred(), color->Getgreen(), color->Getblue());
 
-    Point *P1 = new Point(0.0, 1.0);
-    Point *P2 = new Point(1.0, -1.0);
-    Point *P3 = new Point(0.0, -1.0);
-    Point *P4 = new Point(1.0, 1.0);
+    Point *P1 = new Point(-100.0, 100.0);
+    Point *P2 = new Point(100.0, 100.0);
+    Point *P3 = new Point(100.0, -100.0);
+    Point *P4 = new Point(-100.0, -100.0);
 
-    bool c = coupe(*P1, *P2, *P3, *P4);
+    Point *P5 = new Point(0.0, 0.0);
+    Point *P6 = new Point(200.0, 0.0);
+    Point *P7 = new Point(200.0, -200.0);
+    Point *P8 = new Point(0.0, -200.0);
 
-    printf("%d", c);
-    if(c)
+    //bool c = coupe(*P1, *P2, *P3, *P4);
+
+    //printf("%d", c);
+    //if(c)
     {
-        Point temp = intersection(*P1, *P2, *P3, *P4);
-        printf("\n%f - %f", temp.Getx(), temp.Gety());
+        //Point temp = intersection(*P1, *P2, *P3, *P4);
+        //printf("\n%f - %f", temp.Getx(), temp.Gety());
     }
 
-    bool v1 = visible(*P4, *P1, *P2, true);
-    bool v2 = visible(*P3, *P1, *P2, true);
+    //bool v1 = visible(*P4, *P1, *P2, true);
+    //bool v2 = visible(*P3, *P1, *P2, true);
 
-    printf("\n%d - %d", v1, v2);
+    //printf("\n%d - %d", v1, v2);
+
+    Poly p = Poly(Color(1.0,0.0,0.0));
+    p.Addpoint(*P1);
+    p.Addpoint(*P2);
+    p.Addpoint(*P3);
+    p.Addpoint(*P4);
+
+    polygons.push_back(p);
+
+    Poly o = Poly(Color(0.0,1.0,0.0));
+    o.Addpoint(*P5);
+    o.Addpoint(*P6);
+    o.Addpoint(*P7);
+    o.Addpoint(*P8);
+
+    windows.push_back(o);
 
 	/* Entr�e dans la boucle principale de glut, traitement des �v�nements */
     glutMainLoop();         // lancement de la boucle de r�ception des �v�nements
@@ -261,6 +283,8 @@ void processMenuEvents(int option) {
 			newWindow();
 			break;
 		case 4 :
+			printf("4");
+			Fenetrage(0);
             break;
         case 5 :
             break;
@@ -795,6 +819,7 @@ Poly sutherlandHodgman(Poly p, Poly window)
                 if(coupe(S,PL[j], PW[i], PW[(i+1)%PW.size()] ))
                 {
                     I = intersection(S,PL[j], PW[i], PW[(i+1)%PW.size()] );
+                    printf("\n I : %f , %f", I.Getx(), I.Gety());
                     PS.push_back(I);
                 }
             }
@@ -832,6 +857,60 @@ Poly sutherlandHodgman(Poly p, Poly window)
 /***-- Fin Partie Fenetrage --***/
 
 /***-- Partie Interaction --***/
+void Fenetrage(int mode)
+{
+    if(windows[windows.size() - 1].Getpoints().size() >= 3)
+    {
+        polywindow.clear();
+        for(int i = 0; i < polygons.size(); i++)
+        {
+            Poly temp = Poly(Color(0.0,0.0,0.0));
+            switch(mode){
+                case 0:
+                    //Sutherland Hogdman
+                    temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
+                    break;
+                case 1:
+                    temp = Poly(Color(1.0,1.0,1.0));
+                    printf("dddd");
+
+                    //Cyrus Beck
+                    for(int j = 0; j < polygons[i].Getpoints().size(); j++){
+                        Point p1;
+                        Point p2;
+                        int m = 1;
+                        bool b = cyrusBeck(&polygons[i].GetpointsPointer()->at(j), &polygons[i].GetpointsPointer()->at((j + 1)%polygons[i].Getpoints().size()), windows[windows.size() - 1], &temp);
+                    }
+
+                    //Ajout des sommets de la fenetre au nouveau polygon s'ils sont à l'intérieur du polygon découpé
+                    for(int j = 0; j < windows.back().Getpoints().size(); j++)
+                    {
+                        float tempX1, tempY1, tempX2, tempY2;
+                        tempX1 = windows.back().Getpoints()[j].Getx();
+                        tempY1 = windows.back().Getpoints()[j].Gety();
+                        tempX2 = 250;
+                        tempY2 = windows.back().Getpoints()[j].Getx();
+
+                        bool inpoly = inPolygon(Point(tempX1, tempY1), Point(tempX2, tempY2), polygons[i]);
+                        if(inpoly)
+                        {
+                            temp.Addpoint(windows.back().Getpoints()[j]);
+                        }
+
+                    }
+
+                    //Tri des sommets dans l'ordre horaire
+                    temp.sortedPoints();
+                    break;
+                }
+            //printf("\n%f, %f, %f", temp.Getcolor().Getred(),temp.Getcolor().Getgreen(), temp.Getcolor().Getblue() );
+            polywindow.push_back(temp);
+
+        }
+    }
+    affichage();
+}
+
 void mouse(int button,int state,int x,int y)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) { 	// Si on appuie sur le bouton de gauche
@@ -846,44 +925,8 @@ void mouse(int button,int state,int x,int y)
             case 1: // Mode creation de polygone
                 polygons[polygons.size() - 1].Addpoint(*p);
                 break;
-            case 2: // Mode fenetrage
+            case 2:
                 windows[windows.size() - 1].Addpoint(*p);
-                if(windows[windows.size() - 1].Getpoints().size() >= 3)
-                {
-                    polywindow.clear();
-                    for(int i = 0; i < polygons.size(); i++)
-                    {
-                        //Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
-                        //polywindow.push_back(temp);
-                        Poly temp = Poly(windowPolyColor);
-                        for(int j = 0; j < polygons[i].Getpoints().size(); j++){
-                            Point p1;
-                            Point p2;
-                            int m = 1;
-                            bool b = cyrusBeck(&polygons[i].GetpointsPointer()->at(j), &polygons[i].GetpointsPointer()->at((j + 1)%polygons[i].Getpoints().size()), windows[windows.size() - 1], &temp);
-                        }
-                        printf("\n Size poly : %d - Size window : %d - Size polywindow : %d",polygons.size(), windows.size(), polywindow.size() );
-
-                        for(int j = 0; j < windows.back().Getpoints().size(); j++)
-                        {
-                            float tempX1, tempY1, tempX2, tempY2;
-                            tempX1 = windows.back().Getpoints()[j].Getx();
-                            tempY1 = windows.back().Getpoints()[j].Gety();
-                            tempX2 = 250;
-                            tempY2 = windows.back().Getpoints()[j].Getx();
-
-                            bool inpoly = inPolygon(Point(tempX1, tempY1), Point(tempX2, tempY2), polygons[i]);
-                            printf("\n (%f, %f) in polygon ? %d", tempX1, tempY1, inpoly);
-                            if(inpoly)
-                            {
-                                temp.Addpoint(windows.back().Getpoints()[j]);
-                            }
-
-                        }
-                        temp.sortedPoints();
-                        polywindow.push_back(temp);
-                    }
-                }
                 break;
             }
 		}
