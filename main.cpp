@@ -52,6 +52,7 @@ Poly *poly;
 vector<Poly> polygons;
 vector<Poly> windows;
 vector<Poly> polywindow;
+vector<Point> pixelColoriser;
 int mode = 0;
 
 /* prototypes de fonctions */
@@ -232,7 +233,8 @@ void processRemplissageEvents(int option) {
 	    case 1 :
 	        if(polygons.size()) {
                 Point p = polygons.back().GetMiddle();
-                RemplissageRegionConnexite4A((int)p.Getx(), (int)p.Gety(), polygons.back().Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
+                RemplissageRegionConnexite4A(0, 0, Color(1.0, 0.0, 0.0), remplissageColor); //Point, couleur contour, couleur remplissage
+                affichage();
 	        } else {
                 printf("\n Erreur: Pas de polygone a remplir... \n");
 	        }
@@ -240,7 +242,9 @@ void processRemplissageEvents(int option) {
 		case 2 :
 		    if(polygons.size()) {
                 Point p = polygons.back().GetMiddle();
-                RemplissageRegionConnexite4B((int)p.Getx(), (int)p.Gety(), polygons.back().Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
+               // RemplissageRegionConnexite4B((int)p.Getx(), (int)p.Gety(), polygons.back().Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
+                RemplissageLigne(0, 0, Color(1.0, 0.0, 0.0), remplissageColor);
+                affichage();
 	        } else {
                 printf("\n Erreur: Pas de polygone a remplir... \n");
 	        }
@@ -248,6 +252,7 @@ void processRemplissageEvents(int option) {
 		case 3 :
 		    if(polygons.size()) {
                 RemplissageRectEG(polygons[(polygons.size() - 1)], remplissageColor); //Point, couleur contour, couleur remplissage
+                affichage();
 	        } else {
                 printf("\n Erreur: Pas de polygone a remplir... \n");
 	        }
@@ -270,6 +275,7 @@ void processRemplissageEvents(int option) {
             printf("%d \n", polywindow.size());
             if(polywindow.size()) {
                 RemplissageRectEG(polywindow.back(), remplissageColor); //Point, couleur contour, couleur remplissage
+                affichage();
 	        } else {
                 printf("\n Erreur: Pas de polygone creer par une fenetre... \n");
 	        }
@@ -299,6 +305,7 @@ void processMenuEvents(int option) {
             polygons.clear();
             windows.clear();
             polywindow.clear();
+            pixelColoriser.clear();
             affichage();
             break;
 	}
@@ -310,9 +317,23 @@ void affichage(){
     glClear(GL_COLOR_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
+
+    glBegin(GL_POINTS);
+    glColor3f(1.0, 1.0, 1.0);
+    glVertex2f(0, 0);
+    glEnd();
+
     for(int i = 0; i < polygons.size(); i++)
     {
         polygons[i].display();
+    }
+
+    for(int i = 0; i < pixelColoriser.size(); i++) {
+        glBegin(GL_POINTS);
+        glColor3f(remplissageColor.Getred(), remplissageColor.Getgreen(), remplissageColor.Getblue());
+        glVertex2f((int)pixelColoriser[i].Getx(), (int)pixelColoriser[i].Gety());
+        glEnd();
+        glFlush();
     }
 
     for(int i = 0; i < windows.size(); i++)
@@ -324,11 +345,6 @@ void affichage(){
     {
         polywindow[i].display();
     }
-
-    glBegin(GL_POINTS);
-    glColor3f(1.0, 1.0, 1.0);
-    glVertex2f(0, 0);
-    glEnd();
 
     glFlush();
 }
@@ -367,24 +383,20 @@ void afficheLigne(int xg, int xd, int y, Color cr) {
 }
 
 void affichePixel(int x, int y, Color CR) {
-    glBegin(GL_POINTS);
-    glColor3f(CR.Getred(), CR.Getgreen(), CR.Getblue());
-    glVertex2f(x, y);
-    glEnd();
-    glFlush();
+    Point p = Point(x, y);
+    pixelColoriser.push_back(p);
 }
 
 /***-- Partie Remplissage --***/
 //Probleme avec ce remplissage: probleme de dépassement de capacité due à la récursivité (ne fonctionne que sur les petits polygones)
 void RemplissageRegionConnexite4A(int x, int y, Color CC, Color CR) { // point, couleur contour, couleur remplissage
-    Color CP;
-    CP = GetColorPixel(x+250, y+250);
+    Color CP = GetColorPixel(x+250, y+250);
     if(!(CP == CC) && !(CP == CR)) {
         affichePixel(x, y, CR);
-        RemplissageRegionConnexite4A(x, y-1, CC, CR);
-        RemplissageRegionConnexite4A(x-1, y, CC, CR);
         RemplissageRegionConnexite4A(x, y+1, CC, CR);
-        RemplissageRegionConnexite4A(x+1, y, CC, CR);
+        RemplissageRegionConnexite4A(x, y-1, CC, CR);
+        RemplissageRegionConnexite4A(x+1, y+1, CC, CR);
+        RemplissageRegionConnexite4A(x-1, y, CC, CR);
     }
 }
 
@@ -422,6 +434,23 @@ void RemplissageRegionConnexite4B(int x, int y, Color CC, Color CR) {
         if(!(CP == CC) && !(CP == CR)) {
             Point temp = Point(x+1, y);
             p.push(temp);
+        }
+    }
+}
+
+void Remplissage4(int x, int y, Color CC, Color CR) {
+    stack<Point> p; //Initialisation de la pile à vide
+    int w,e;
+    Color CP = GetColorPixel(x+250, y+250);
+    if(!(CP == Color(0.0, 0.0, 0.0) || !(CP == Color(1.0, 1.0, 1.0)))) {
+        return;
+    }
+    Point point = Point(x, y);
+    p.push(point); // On empile le point dans p
+    while(!p.empty()) {
+        p.pop();
+        if((CP == Color(0.0, 0.0, 0.0) || (CP == Color(1.0, 1.0, 1.0)))) {
+
         }
     }
 }
@@ -483,10 +512,8 @@ void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, co
                 CP = GetColorPixel(x+250, y+1+250);
             }
 
-            printf("%d, %d, %f, %f, %f \n", x, xg, CP.Getred(), CP.Getgreen(), CP.Getblue());
             if((x >= xg) && !(CP == CC) && !(CP == CR)) {
                 //On empile le nouveau germe au dessus trouvé);
-                printf("/n X: %d Point numero %d\n", x, y+1);
                 Point tempo = Point(x, y+1);
                 p.push(tempo);
             }
@@ -494,7 +521,6 @@ void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, co
                 x = x-1;
                 CP = GetColorPixel(x+250, y+1+250);
             }
-            printf("%d, %d, %f, %f, %f \n", x, xg, CP.Getred(), CP.Getgreen(), CP.Getblue());
 
         }
 

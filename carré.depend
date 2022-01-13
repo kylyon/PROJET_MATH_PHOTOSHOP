@@ -201,7 +201,7 @@
 	"Point.h"
 	"Color.h"
 
-1642063099 source:c:\users\raf\onedrive\documents\github\projet_math_photoshop\main.cpp
+1642066099 source:c:\users\raf\onedrive\documents\github\projet_math_photoshop\main.cpp
 	<windows.h>
 	<GL/glut.h>
 	<stdlib.h>
