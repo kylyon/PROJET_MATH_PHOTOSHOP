@@ -66,13 +66,16 @@
 
 1641244659 g:\cours\math\projet_math_photoshop\include\color.h
 
-1641238930 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\src\point.cpp
+1642023738 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\src\point.cpp
 	"Point.h"
+	<cmath>
 
-1641238930 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\point.h
+1642023738 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\point.h
 	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
 
-1641907156 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\src\polygon.cpp
+1642026235 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\src\polygon.cpp
 	"Polygon.h"
 	<windows.h>
 	<GL/glut.h>
@@ -80,10 +83,11 @@
 	<stdio.h>
 	<vector>
 	<limits>
+	<cmath>
 	"Point.h"
 	"Color.h"
 
-1642016618 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\polygon.h
+1642025501 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\polygon.h
 	<windows.h>
 	<GL/glut.h>
 	<stdlib.h>
@@ -95,9 +99,9 @@
 1641327076 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\src\color.cpp
 	"Color.h"
 
-1641937224 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\color.h
+1642023679 c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\include\color.h
 
-1642023462 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\main.cpp
+1642033988 source:c:\users\raf\documents\projet 4a3djv\projet_math_photoshop\main.cpp
 	<windows.h>
 	<GL/glut.h>
 	<stdlib.h>

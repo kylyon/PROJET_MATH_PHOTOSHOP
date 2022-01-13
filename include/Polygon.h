@@ -23,6 +23,10 @@ class Poly
         void Addpoint(Point p);
         void display();
         bool isHoraire();
+        float GetXMin();
+        float GetXMax();
+        float GetYMin();
+        float GetYMax();
         bool contains(Point p);
         Point GetMiddle();
         void sortedPoints();

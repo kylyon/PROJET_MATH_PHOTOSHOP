@@ -20,6 +20,22 @@ Poly::Poly(Color c)
     color = c;
 }
 
+float Poly::GetXMin() {
+    return xMin;
+}
+
+float Poly::GetXMax() {
+    return xMax;
+}
+
+float Poly::GetYMin() {
+    return yMin;
+}
+
+float Poly::GetYMax() {
+    return yMax;
+}
+
 void Poly::Addpoint(Point p)
 {
     this->m_points.push_back(p);

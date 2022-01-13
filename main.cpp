@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <vector>
 #include <cmath>
+
 #include <limits>
 #include <stack>
 #include <list>
@@ -35,7 +36,7 @@ using std::vector;
 
 
 static int window;
-int menu, color_menu, color_polygon_menu, color_window_menu, color_cut_polygon_menu;
+int menu, color_menu, color_polygon_menu, color_window_menu, color_cut_polygon_menu, color_remplissage, remplissage_menu;
 
 int xClic, yClic;  // clic souris
              // coin inf�rieur gauche du carr�
@@ -46,7 +47,7 @@ double c;    // cot� du carr�
 
 //vector<Point> points;
 //vector<Color> colors;
-Color *color;
+Color polyColor, windowColor, windowPolyColor, remplissageColor;
 Poly *poly;
 vector<Poly> polygons;
 vector<Poly> windows;
@@ -55,19 +56,22 @@ int mode = 0;
 
 /* prototypes de fonctions */
 void affichage(void);                             // mod�lisation
-void clavier(unsigned char touche,int x,int y);   // fonction clavier
 void mouse(int bouton,int etat,int x,int y);      // fonction souris
 void createMenu(void);
-void createColorMenu();
+void createSubMenu(char colorA[], char colorB[], char colorC[], int iA, int iB, int iC);
 void RemplissageLCA(Poly polygon, Color CR);
 void CreatSI(Poly polygon);
 void processMenuEvents(int option);
 void processColorEvents(int option);
+void processRemplissageEvents(int option);
 void affichePixel(int x, int y, Color CR);
 void RemplissageRegionConnexite4A(int x, int y, Color CC, Color CR);
 void RemplissageRegionConnexite4B(int x, int y, Color CC, Color CR);
+void RemplissageRectEG(Poly pol, Color CR);
 void RemplissageLigne(int x, int y, Color cc, Color cr);
 void afficheLigne(int xg, int xd, int y, Color cr);
+bool inPolygon(Point p1, Point p2, Poly poly);
+
 void newPolygon();
 void newWindow();
 Color GetColorPixel(int x, int y);
@@ -75,12 +79,14 @@ bool coupe(Point P1, Point P2, Point P3, Point P4);
 bool visible(Point S, Point F, Point F1, bool antiHoraire);
 Point intersection(Point P1, Point P2, Point P3, Point P4);
 
-/* Programme principal */
-int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
-		  char **argv){  // argv: tableau de chaines de caract�res, argv[0] contient le nom du programme lanc� (plus un �ventuel chemin)
+/***-- Partie Main --***/
+int main(int argc, char **argv){
+    polyColor = Color(1.0f, 0.0f, 0.0f);
+    windowColor = Color(1.0f, 1.0f, 0.0f);
+    windowPolyColor = Color(0.376f, 0.376f, 0.376f);
+    remplissageColor = Color(0.466f, 0.709f, 0.996f);
 
-    color = new Color(1.0f,0.0f,0.0f);
-    poly = new Poly(*color);
+    poly = new Poly(polyColor);
 
 	/* Initialisation de glut et creation de la fenetre */
     glutInit(&argc, argv);                       // Initialisation
@@ -100,7 +106,6 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
 	/* Enregistrement des fonctions de rappel
      => initialisation des fonctions callback appel�es par glut */
     glutDisplayFunc(affichage);
-	glutKeyboardFunc(clavier);
 	glutMouseFunc(mouse);
 
     /* rq: le callback de fonction (fonction de rappel) est une fonction qui est pass�e en argument � une
@@ -133,52 +138,110 @@ int main(int argc,       // argc: nombre d'arguments, argc vaut au moins 1
     glutMainLoop();         // lancement de la boucle de r�ception des �v�nements
     return 0;
 }
+/***-- Fin Partie Main --***/
 
-void createMenu(void){
-    color_polygon_menu = glutCreateMenu(processColorEvents);
-    createColorMenu();
+/***-- Partie Menu --***/
+void createMenu(void) {
+    color_polygon_menu = glutCreateMenu(processColorEvents); //Partie couleurs
+    createSubMenu("Rouge", "Bleu", "Vert", 1, 2, 3);
     color_window_menu = glutCreateMenu(processColorEvents);
-    createColorMenu();
+    createSubMenu("Jaune", "Rose", "Violet", 4, 5, 6);
     color_cut_polygon_menu = glutCreateMenu(processColorEvents);
-    createColorMenu();
+    createSubMenu("Gris", "Orange", "Marron", 7, 8, 9);
+    color_remplissage = glutCreateMenu(processColorEvents);
+    createSubMenu("Bleu ciel", "Beige", "Mauve", 10, 11, 12);
     color_menu = glutCreateMenu(processColorEvents);
     glutAddSubMenu("Polygone a decouper", color_polygon_menu);
 	glutAddSubMenu("Fenetrage", color_window_menu);
 	glutAddSubMenu("Polygone decouper", color_cut_polygon_menu);
+    glutAddSubMenu("Remplissage", color_remplissage);
+
+    remplissage_menu = glutCreateMenu(processRemplissageEvents);
+    createSubMenu("Algo 1", "Algo 2", "Algo 3", 1, 2, 3);
+
 	menu = glutCreateMenu(processMenuEvents);
 	glutAddSubMenu("Couleurs", color_menu);
 	glutAddMenuEntry("Polygone a decouper",2);
 	glutAddMenuEntry("Trace fenetre",3);
 	glutAddMenuEntry("Fenetrage",4);
-	glutAddMenuEntry("Remplissage",5);
+	glutAddSubMenu("Remplissage", remplissage_menu);
+	glutAddMenuEntry("Reinitialiser", 6);
 	glutAddMenuEntry("Quitter", 0);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
-void createColorMenu() {
-    glutAddMenuEntry("Rouge",1);
-    glutAddMenuEntry("Vert",2);
-    glutAddMenuEntry("Bleu",3);
-    glutAddMenuEntry("Blanc",4);
+void createSubMenu(char colorA[], char colorB[], char colorC[], int iA, int iB, int iC) {
+    glutAddMenuEntry(colorA, iA);
+    glutAddMenuEntry(colorB, iB);
+    glutAddMenuEntry(colorC, iC);
 }
 
 void processColorEvents(int option) {
     switch (option) {
+	    case 1:
+	        polyColor = Color(1.0f, 0.0f, 0.0f); // Rouge
+	        break;
+		case 2:
+		    polyColor = Color(0.0f, 0.0f, 1.0f); // Bleu
+			break;
+		case 3:
+			polyColor = Color(0.0f, 1.0f, 0.0f); // Vert
+			break;
+		case 4:
+		    windowColor = Color(1.0f, 1.0f, 0.0f); // Jaune
+			break;
+        case 5:
+		    windowColor = Color(0.992f, 0.423f, 0.619f); // Rose
+			break;
+        case 6:
+		    windowColor = Color(0.4f, 0.0f, 0.6f); // Violet
+			break;
+        case 7:
+		    windowPolyColor = Color(0.376f, 0.376f, 0.376f); // Gris
+			break;
+        case 8:
+		    windowPolyColor = Color(0.929f, 0.498f, 0.063f); // Orange
+			break;
+        case 9:
+		    windowPolyColor = Color(0.345f, 0.160f, 0.0f); // Marron
+			break;
+        case 10:
+		    remplissageColor = Color(0.466f, 0.709f, 0.996f); // Bleu ciel
+			break;
+        case 11:
+		    remplissageColor = Color(0.784f, 0.678f, 0.498f); // Beige
+			break;
+        case 12:
+		    remplissageColor = Color(0.831f, 0.451f, 0.831f); // Mauve
+			break;
+	}
+}
+
+void processRemplissageEvents(int option) {
+    switch (option) {
 	    case 1 :
-	        color = new Color(1.0f,0.0f,0.0f);
-	        //newPolygon();
+	        if(polygons.size() != 0) {
+                Point p = polygons[(polygons.size() - 1)].GetMiddle();
+                RemplissageRegionConnexite4A((int)p.Getx(), (int)p.Gety(), polygons[polygons.size()-1].Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
+	        } else {
+                printf("Erreur: Pas de polygone a remplir...");
+	        }
 	        break;
 		case 2 :
-		    color = new Color(0.0f,1.0f,0.0f);
-			//newPolygon();
+		    if(polygons.size() != 0) {
+                Point p = polygons[(polygons.size() - 1)].GetMiddle();
+                RemplissageRegionConnexite4B((int)p.Getx(), (int)p.Gety(), polygons[polygons.size()-1].Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
+	        } else {
+                printf("Erreur: Pas de polygone a remplir...");
+	        }
 			break;
 		case 3 :
-			color = new Color(0.0f,0.0f,1.0f);
-			//newPolygon();
-			break;
-		case 4 :
-		    color = new Color(1.0f,1.0f,1.0f);
-			//newPolygon();
+		    if(polygons.size() != 0) {
+                printf("\n nombre de polygones: %d \n", polygons.size());
+                RemplissageRectEG(polygons[(polygons.size() - 1)], remplissageColor); //Point, couleur contour, couleur remplissage
+	        } else {
+                printf("Erreur: Pas de polygone a remplir...");
+	        }
 			break;
 	}
 }
@@ -186,40 +249,35 @@ void processColorEvents(int option) {
 void processMenuEvents(int option) {
 	switch (option) {
 	    case 0 :
-	        printf("0");
 	        glutDestroyWindow(window);
             exit(0);
 	        break;
 		case 1 :
-			printf("1");
 			break;
 		case 2 :
-			printf("2");
 			newPolygon();
 			break;
 		case 3 :
-			printf("3");
 			newWindow();
 			break;
 		case 4 :
-			printf("4");
             break;
         case 5 :
-            printf("5");
-            Point pt = Point(0, 0);
-            Color cr = Color(0.8, 0.8, 0.8);
-            RemplissageRegionConnexite4B(0, 0, Color(1.0, 0.0, 0.0), cr);
-            //RemplissageLigne((int)pt.Getx(), (int)pt.Gety(), Color(1.0, 0.0, 0.0), cr);
-            //RemplissageRegionConnexite4(pt, Color(1.0, 0.0, 0.0), cr);
+            break;
+        case 6 :
+            polygons.clear();
+            windows.clear();
+            polywindow.clear();
+            affichage();
             break;
 	}
 }
+/***-- Fin Partie Menu --***/
 
+/***-- Partie Affichage --***/
 void affichage(){
     glClear(GL_COLOR_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-    // dessin du carr�
-    // (xClic,yClic) point inf�rieur gauche du carr�
 
     for(int i = 0; i < polygons.size(); i++)
     {
@@ -235,33 +293,29 @@ void affichage(){
     {
         polywindow[i].display();
     }
-    // On force l'affichage du r�sultat
 
     glBegin(GL_POINTS);
-    glColor3f(0.0, 0.0, 1.0);
+    glColor3f(1.0, 1.0, 1.0);
     glVertex2f(0, 0);
     glEnd();
-    glFlush();
 
     glFlush();
-
-    printf("\nCouleur centre: %f, %f, %f \n", GetColorPixel(250, 250).Getred(), GetColorPixel(250, 250).Getgreen(), GetColorPixel(250, 250).Getblue());
-
 }
+/***-- Fin Partie Affichage --***/
 
-void newPolygon()
-{
-    poly = new Poly(*color);
+/***-- Partie Initialisation --***/
+void newPolygon() {
+    poly = new Poly(polyColor);
     polygons.push_back(*poly);
     mode = 1;
 }
 
-void newWindow()
-{
-    poly = new Poly(*color);
+void newWindow() {
+    poly = new Poly(windowColor);
     windows.push_back(*poly);
     mode = 2;
 }
+/***-- Fin Partie Initialisation --***/
 
 
 
@@ -281,23 +335,6 @@ void afficheLigne(int xg, int xd, int y, Color cr) {
     }
 }
 
-//Creation de la structure SI
-void CreatSI(Poly polygon) {
-    //Tableau de liste chainée
-    //taille du tableau : max du polygon en Y.
-
-}
-
-
-void RemplissageLCA(Poly polygon, Color CR) {
-    //Structure SI
-
-    // Initialisation de la structure LCA à vide ici
-
-
-}
-
-
 void affichePixel(int x, int y, Color CR) {
     glBegin(GL_POINTS);
     glColor3f(CR.Getred(), CR.Getgreen(), CR.Getblue());
@@ -306,7 +343,7 @@ void affichePixel(int x, int y, Color CR) {
     glFlush();
 }
 
-
+/***-- Partie Remplissage --***/
 //Probleme avec ce remplissage: probleme de dépassement de capacité due à la récursivité (ne fonctionne que sur les petits polygones)
 void RemplissageRegionConnexite4A(int x, int y, Color CC, Color CR) { // point, couleur contour, couleur remplissage
     Color CP;
@@ -358,6 +395,21 @@ void RemplissageRegionConnexite4B(int x, int y, Color CC, Color CR) {
     }
 }
 
+void RemplissageRectEG(Poly pol, Color CR) {
+    int x, y, xMin, xMax, yMin, yMax;
+    xMin = (int)pol.GetXMin();
+    yMin = (int)pol.GetYMin();
+    xMax = (int)pol.GetXMax();
+    yMax = (int)pol.GetYMax();
+    for(x = xMin; x <= xMax; x++) {
+        for(y = yMin; y <= yMax; y++) {
+            if(inPolygon(Point(x, y), Point(x+250, y), pol)) {
+                affichePixel(x, y, CR);
+            }
+        }
+    }
+}
+
 void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, couleur contour = rouge, couleur remplissage = grise
     stack<Point> p; //Initialisation de la pile à vide
     Color CP, CPd, CPg; //couleur du pixel
@@ -368,20 +420,16 @@ void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, co
         Point sommet = p.top(); //Recupere le sommet de la pile
         x = (int)sommet.Getx();
         y = (int)sommet.Gety();
-        printf("\n x: %d y: %d \n", x, y);
-        printf("\n taille de la pile : %d \n", p.size());
         p.pop(); // Depile
-        printf("\n taille de la pile : %d \n", p.size());
         CP = GetColorPixel(x+250, y+250);
-        //printf("%d, %d, %d \n", CP.Getred(), CP.Getgreen(), CP.Getblue());
 
         // On determine les abscisses extremes xg et xd de la ligne de balayage y
         //recherche de l'extreme droite
         xd = x + 1;
         CPd = CP;
-        while(!(CPd == CC)) {
-            xd += 1;
+        while(!(CPd == CC) && xd < 250) {
             CPd = GetColorPixel(xd+250, y+250);
+            xd += 1;
         }
         xd -= 1;
 
@@ -396,21 +444,8 @@ void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, co
 
         //Affichage de la ligne
         afficheLigne(xg, xd, y, CR);
-
-        //Recherche de nouveau germe sur la ligne de balayage au-dessus
-
-        /*x = xd;
-        glBegin(GL_POINTS);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex2f(x, y+1);
-        glEnd();
-        glFlush();
-        CP = GetColorPixel(x+250, y+1+250);
-        printf("%d, %f, %f, %f \n", x, CP.Getred(), CP.Getgreen(), CP.Getblue());*/
         x = xd;
         CP = GetColorPixel(x+250, y+250+1);
-        //printf("%d, %f, %f, %f \n", x, CPd.Getred(), CPd.Getgreen(), CPd.Getblue());
-        //printf("%d, %f, %f, %f \n", xd, CP.Getred(), CP.Getgreen(), CP.Getblue());
         while(x >= xg) {
             while(((CP == CC) || (CP == CR)) && (x >= xg)) {
                 x -= 1;
@@ -433,7 +468,7 @@ void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, co
         }
 
         //Recherche de nouveau germe sur la ligne de balayage en-dessous
-      /*  x = xd;
+        x = xd;
         CP = GetColorPixel(x+250, y+250-1);
         while(x >= xg) {
             while(((CP == CC) || (CP == CR)) && (x >= xg)) {
@@ -449,29 +484,25 @@ void RemplissageLigne(int x, int y, Color CC, Color CR) { // point de depart, co
                 x = x - 1;
                 CP = GetColorPixel(x+250, y-1+250);
             }
-        }*/
-        //printf("%d, %f, %f, %f \n", xd, CPd.Getred(), CPd.Getgreen(), CPd.Getblue());
-        //recherche de l'extreme gauche
+        }
     }
 }
 
-int* rectangleEnglobant(Poly poly) {
-    int RectEG[2];
-    //recuperer min et max d'un polygone
-    return RectEG;
+//Creation de la structure SI
+void CreatSI(Poly polygon) {
+    //Tableau de liste chainée
+    //taille du tableau : max du polygon en Y.
 }
 
-bool interieur(int x, int y, Poly pol) {
-
+void RemplissageLCA(Poly polygon, Color CR) {
+    //Structure SI
+    // Initialisation de la structure LCA à vide ici
 }
 
+/***-- Fin Partie Remplissage --***/
 
-void RemplissageRectEG(Poly pol, Point RectEG[2], Color CR) {
-    int x, y, xMin, xMax, yMin, yMax;
-
-}
-
-bool inPolygon(Point p1, Point p2, Poly poly)
+/***-- Partie Fenetrage --***/
+bool inPolygon(Point p1, Point p2, Poly poly) // Point à vérifier, Meme Y mais X à la bordure de la fenetre +250
 {
     vector<Point> normals;
     Point *normal;
@@ -511,7 +542,7 @@ bool inPolygon(Point p1, Point p2, Poly poly)
             return (WN >= 0);
         }else{
             t = -(WN)/(DN);
-            printf("\n t : %f", t);
+           // printf("\n t : %f", t);
             if(DN > 0) { /* calcul du max des tinf */
                 if(t > tinf) {
                     tinf = t;
@@ -798,27 +829,24 @@ Poly sutherlandHodgman(Poly p, Poly window)
     return temp;
 
 }
+/***-- Fin Partie Fenetrage --***/
 
+/***-- Partie Interaction --***/
 void mouse(int button,int state,int x,int y)
 {
-
-	// Si on appuie sur le bouton de gauche
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) { 	// Si on appuie sur le bouton de gauche
 		xClic = x - 250; //on sauvegarde la position de la souris
 		yClic = -y + 250;
 		xContext = x;
 		yContext = y;
-		//printf("\n%d, %d", xClic, yClic);
-		if(mode != 0){
+
+		if(mode != 0) {
             Point *p = new Point(xClic, yClic);
-            switch(mode)
-            {
-            case 1:
+            switch(mode) {
+            case 1: // Mode creation de polygone
                 polygons[polygons.size() - 1].Addpoint(*p);
                 break;
-            case 2:
-
+            case 2: // Mode fenetrage
                 windows[windows.size() - 1].Addpoint(*p);
                 if(windows[windows.size() - 1].Getpoints().size() >= 3)
                 {
@@ -827,7 +855,7 @@ void mouse(int button,int state,int x,int y)
                     {
                         //Poly temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
                         //polywindow.push_back(temp);
-                        Poly temp = Poly(Color(1.0,1.0,1.0));
+                        Poly temp = Poly(windowPolyColor);
                         for(int j = 0; j < polygons[i].Getpoints().size(); j++){
                             Point p1;
                             Point p2;
@@ -859,44 +887,9 @@ void mouse(int button,int state,int x,int y)
                 break;
             }
 		}
-        printf("\nAvant\n");
-		affichage();
+		affichage(); //Refresh l'affichage
 		return;
 	}
-
-	// Si on appuie sur le bouton de droite
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
-	{
-		xContext = x - 250; //on sauvegarde la position de la souris
-		yContext = -y + 250;
-		return;
-	}
-
 }
-
-/* Ev�nement du clavier */
-void clavier(unsigned char touche,int x,int y){
-	switch (touche){
-
-		case 'p':/* affichage du carr� plein*/
-			glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-			glutPostRedisplay();     // permet l'affichage
-			break;
-
-		case 'f':/* affichage en mode fil de fer*/
-			glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-			glutPostRedisplay();
-			break;
-
-		case 's':/* affichage en mode sommets seuls*/
-			glPolygonMode(GL_FRONT_AND_BACK,GL_POINT);
-			glutPostRedisplay();
-			break;
-
-		case 'q':/* Quitter le programme */
-			exit(0);
-			break;
-	}
-}
-
+/***-- Fin Partie Interaction --***/
 
