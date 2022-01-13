@@ -166,3 +166,53 @@
 	"Polygon.h"
 	"Color.h"
 
+1642058066 source:c:\users\raf\onedrive\documents\github\projet_math_photoshop\src\color.cpp
+	"Color.h"
+
+1642058066 c:\users\raf\onedrive\documents\github\projet_math_photoshop\include\color.h
+
+1642058066 source:c:\users\raf\onedrive\documents\github\projet_math_photoshop\src\point.cpp
+	"Point.h"
+	<cmath>
+
+1642058066 c:\users\raf\onedrive\documents\github\projet_math_photoshop\include\point.h
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+
+1642058835 source:c:\users\raf\onedrive\documents\github\projet_math_photoshop\src\polygon.cpp
+	"Polygon.h"
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	<limits>
+	<cmath>
+	"Point.h"
+	"Color.h"
+
+1642058835 c:\users\raf\onedrive\documents\github\projet_math_photoshop\include\polygon.h
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	"Point.h"
+	"Color.h"
+
+1642063099 source:c:\users\raf\onedrive\documents\github\projet_math_photoshop\main.cpp
+	<windows.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<vector>
+	<cmath>
+	<limits>
+	<stack>
+	<list>
+	<tuple>
+	"Point.h"
+	"Polygon.h"
+	"Color.h"
+

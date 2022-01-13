@@ -36,7 +36,7 @@ using std::vector;
 
 
 static int window;
-int menu, color_menu, color_polygon_menu, color_window_menu, color_cut_polygon_menu, color_remplissage, remplissage_menu;
+int menu, color_menu, color_polygon_menu, color_window_menu, color_cut_polygon_menu, color_remplissage, remplissage_menu, fenetrage_menu;
 
 int xClic, yClic;  // clic souris
              // coin inf�rieur gauche du carr�
@@ -140,22 +140,6 @@ int main(int argc, char **argv){
 
     //printf("\n%d - %d", v1, v2);
 
-    Poly p = Poly(Color(1.0,0.0,0.0));
-    p.Addpoint(*P1);
-    p.Addpoint(*P2);
-    p.Addpoint(*P3);
-    p.Addpoint(*P4);
-
-    polygons.push_back(p);
-
-    Poly o = Poly(Color(0.0,1.0,0.0));
-    o.Addpoint(*P5);
-    o.Addpoint(*P6);
-    o.Addpoint(*P7);
-    o.Addpoint(*P8);
-
-    windows.push_back(o);
-
 	/* Entr�e dans la boucle principale de glut, traitement des �v�nements */
     glutMainLoop();         // lancement de la boucle de r�ception des �v�nements
     return 0;
@@ -180,12 +164,16 @@ void createMenu(void) {
 
     remplissage_menu = glutCreateMenu(processRemplissageEvents);
     createSubMenu("Algo 1", "Algo 2", "Algo 3", 1, 2, 3);
+    glutAddMenuEntry("Remplissage polygone fenetre", 6);
+    fenetrage_menu = glutCreateMenu(processRemplissageEvents);
+    glutAddMenuEntry("Cyrus Beck", 4);
+    glutAddMenuEntry("Sutherland-Hodgdman", 5);
 
 	menu = glutCreateMenu(processMenuEvents);
 	glutAddSubMenu("Couleurs", color_menu);
 	glutAddMenuEntry("Polygone a decouper",2);
 	glutAddMenuEntry("Trace fenetre",3);
-	glutAddMenuEntry("Fenetrage",4);
+	glutAddSubMenu("Fenetrage", fenetrage_menu);
 	glutAddSubMenu("Remplissage", remplissage_menu);
 	glutAddMenuEntry("Reinitialiser", 6);
 	glutAddMenuEntry("Quitter", 0);
@@ -242,29 +230,50 @@ void processColorEvents(int option) {
 void processRemplissageEvents(int option) {
     switch (option) {
 	    case 1 :
-	        if(polygons.size() != 0) {
-                Point p = polygons[(polygons.size() - 1)].GetMiddle();
-                RemplissageRegionConnexite4A((int)p.Getx(), (int)p.Gety(), polygons[polygons.size()-1].Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
+	        if(polygons.size()) {
+                Point p = polygons.back().GetMiddle();
+                RemplissageRegionConnexite4A((int)p.Getx(), (int)p.Gety(), polygons.back().Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
 	        } else {
-                printf("Erreur: Pas de polygone a remplir...");
+                printf("\n Erreur: Pas de polygone a remplir... \n");
 	        }
 	        break;
 		case 2 :
-		    if(polygons.size() != 0) {
-                Point p = polygons[(polygons.size() - 1)].GetMiddle();
-                RemplissageRegionConnexite4B((int)p.Getx(), (int)p.Gety(), polygons[polygons.size()-1].Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
+		    if(polygons.size()) {
+                Point p = polygons.back().GetMiddle();
+                RemplissageRegionConnexite4B((int)p.Getx(), (int)p.Gety(), polygons.back().Getcolor(), remplissageColor); //Point, couleur contour, couleur remplissage
 	        } else {
-                printf("Erreur: Pas de polygone a remplir...");
+                printf("\n Erreur: Pas de polygone a remplir... \n");
 	        }
 			break;
 		case 3 :
-		    if(polygons.size() != 0) {
-                printf("\n nombre de polygones: %d \n", polygons.size());
+		    if(polygons.size()) {
                 RemplissageRectEG(polygons[(polygons.size() - 1)], remplissageColor); //Point, couleur contour, couleur remplissage
 	        } else {
-                printf("Erreur: Pas de polygone a remplir...");
+                printf("\n Erreur: Pas de polygone a remplir... \n");
 	        }
 			break;
+        case 4 :
+            if(windows.size()) {
+                Fenetrage(1);
+            } else {
+                printf("\n Erreur: Pas de fenetre dessinee... \n");
+            }
+            break;
+        case 5 :
+            if(windows.size()) {
+                Fenetrage(0);
+            } else {
+                printf("\n Erreur: Pas de fenetre dessinee... \n");
+            }
+            break;
+        case 6:
+            printf("%d \n", polywindow.size());
+            if(polywindow.size()) {
+                RemplissageRectEG(polywindow.back(), remplissageColor); //Point, couleur contour, couleur remplissage
+	        } else {
+                printf("\n Erreur: Pas de polygone creer par une fenetre... \n");
+	        }
+            break;
 	}
 }
 
@@ -283,8 +292,6 @@ void processMenuEvents(int option) {
 			newWindow();
 			break;
 		case 4 :
-			printf("4");
-			Fenetrage(0);
             break;
         case 5 :
             break;
@@ -526,7 +533,7 @@ void RemplissageLCA(Poly polygon, Color CR) {
 /***-- Fin Partie Remplissage --***/
 
 /***-- Partie Fenetrage --***/
-bool inPolygon(Point p1, Point p2, Poly poly) // Point à vérifier, Meme Y mais X à la bordure de la fenetre +250
+bool inPolygon(Point p1, Point p2, Poly poly)
 {
     vector<Point> normals;
     Point *normal;
@@ -566,7 +573,6 @@ bool inPolygon(Point p1, Point p2, Poly poly) // Point à vérifier, Meme Y mais
             return (WN >= 0);
         }else{
             t = -(WN)/(DN);
-           // printf("\n t : %f", t);
             if(DN > 0) { /* calcul du max des tinf */
                 if(t > tinf) {
                     tinf = t;
@@ -631,6 +637,7 @@ bool cyrusBeck(Point *p1, Point *p2, Poly window, Poly *temp)
         C = PolyCB[i];
         DN = DX * normals[i].Getx() + DY * normals[i].Gety();
         WN = (p1->Getx() - C.Getx()) * normals[i].Getx() + (p1->Gety() - C.Gety()) * normals[i].Gety();
+        printf("\n(%f, %f) (%f, %f) -> DN == 0 ? %d", p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety(),  DN == 0);
         if(DN == 0) { /* Division impossible, le segment est réduit à un point */
             return (WN >= 0);
         }else{
@@ -646,8 +653,9 @@ bool cyrusBeck(Point *p1, Point *p2, Poly window, Poly *temp)
                 }
             }
         }
+        printf("reeeee");
     }
-    //printf("\n tinf : %f - tsup : %f", tinf, tsup);
+    printf("\n tinf : %f - tsup : %f", tinf, tsup);
     if(tinf < tsup){ /* Intersection possible */
         if((tinf < 0) && (tsup > 1)){ /* Segment intérieur */
             return true;
@@ -678,7 +686,7 @@ bool cyrusBeck(Point *p1, Point *p2, Poly window, Poly *temp)
                 p2->Sety(p1->Gety() + DY * tsup);
                 p1->Setx(p1->Getx() + DX * tinf);
                 p1->Sety(p1->Gety() + DY * tinf);*/
-                //printf("\nNouveau : (%f, %f)->(%f,%f)",p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety() );
+                printf("\nNouveau : (%f, %f)->(%f,%f)",p1->Getx(), p1->Gety(), p2->Getx(), p2->Gety() );
                 return true;
             }
         }
@@ -797,8 +805,6 @@ Poly sutherlandHodgman(Poly p, Poly window)
     vector<Point> PW = window.Getpoints();
     PW.push_back(window.Getpoints()[0]);
 
-    printf("\nTaille %d - %d", PL.size(), PW.size());
-
     vector<Point> PS;
     int n;
     Point S,F,I;
@@ -819,7 +825,6 @@ Poly sutherlandHodgman(Poly p, Poly window)
                 if(coupe(S,PL[j], PW[i], PW[(i+1)%PW.size()] ))
                 {
                     I = intersection(S,PL[j], PW[i], PW[(i+1)%PW.size()] );
-                    printf("\n I : %f , %f", I.Getx(), I.Gety());
                     PS.push_back(I);
                 }
             }
@@ -843,7 +848,7 @@ Poly sutherlandHodgman(Poly p, Poly window)
     }
 
 
-    Poly temp = Poly(Color(1.0,1.0,1.0));
+    Poly temp = Poly(windowPolyColor);
 
     for(int i = 0; i < PL.size(); i++)
     {
@@ -871,8 +876,7 @@ void Fenetrage(int mode)
                     temp = sutherlandHodgman(polygons[i], windows[windows.size() - 1]);
                     break;
                 case 1:
-                    temp = Poly(Color(1.0,1.0,1.0));
-                    printf("dddd");
+                    temp = Poly(windowPolyColor);
 
                     //Cyrus Beck
                     for(int j = 0; j < polygons[i].Getpoints().size(); j++){
