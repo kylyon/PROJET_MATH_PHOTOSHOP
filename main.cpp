@@ -721,9 +721,9 @@ bool cyrusBeck(Point *p1, Point *p2, Poly window, Poly *temp)
     }
 }
 
-bool coupe(Point P1, Point P2, Point P3, Point P4)
+bool coupe(Point Pj, Point Pk, Point F, Point F1, bool antiHoraire)
 {
-    float a = P2.Getx() - P1.Getx();
+    /*float a = P2.Getx() - P1.Getx();
     float b = P3.Getx() - P4.Getx();
     float c = P2.Gety() - P1.Gety();
     float d = P3.Gety() - P4.Gety();
@@ -737,7 +737,53 @@ bool coupe(Point P1, Point P2, Point P3, Point P4)
     printf("\n (%f, %f)->(%f, %f) , (%f, %f)->(%f, %f) , t : %f , s : %f", P1.Getx(), P1.Gety(),P2.Getx(), P2.Gety(),P3.Getx(), P3.Gety(),P4.Getx(), P4.Gety(),t, s);
 
     float det = (P3.Gety() - P4.Gety()) * (P2.Getx() - P1.Getx()) - (P3.Getx() - P4.Getx()) * (P2.Gety() - P1.Gety());
-    return det != 0 && -1 < t && t < 1 && -1 < s && s < 1 ;
+    return det != 0 && -1 < t && t < 1 && -1 < s && s < 1 ;*/
+
+    float dx = F1.Getx() - F.Getx();
+    float dy = F1.Gety() - F.Gety();
+    Point *normal = new Point(dy, -dx);
+    if(!antiHoraire)
+    {
+        normal = new Point(-dy, dx);
+    }
+
+    float vx = Pj.Getx() - F.Getx();
+    float vy = Pj.Gety() - F.Gety();
+
+    Point *vj = new Point(vx, vy);
+
+    float posJ = (normal->Getx() * vj->Getx()) + (normal->Gety() * vj->Gety());
+
+    if(posJ > 0 ){
+        posJ = 1;
+    }
+
+    if(posJ < 1)
+    {
+        posJ = -1;
+    }
+
+    vx = Pk.Getx() - F.Getx();
+    vy = Pk.Gety() - F.Gety();
+
+    Point *vk = new Point(vx, vy);
+
+    float posK = (normal->Getx() * vk->Getx()) + (normal->Gety() * vk->Gety());
+
+    if(posK > 0 ){
+        posK = 1;
+    }
+
+    if(posK < 1)
+    {
+        posK = -1;
+    }
+
+
+    printf("\n (%f, %f)->(%f, %f) , (%f, %f)->(%f, %f) ,posJ : %f , posK : %f", Pj.Getx(), Pj.Gety(),Pk.Getx(), Pk.Gety(),F.Getx(), F.Gety(),F1.Getx(), F1.Gety(),posJ, posK);
+
+
+    return posJ != posK;
 }
 
 Point intersection(Point P1, Point P2, Point P3, Point P4)
@@ -848,7 +894,7 @@ Poly sutherlandHodgman(Poly p, Poly window)
             }
             else
             {
-                if(coupe(S,PL[j], PW[i], PW[(i+1)%PW.size()] ))
+                if(coupe(S,PL[j], PW[i], PW[(i+1)%PW.size()], window.isHoraire() ))
                 {
                     I = intersection(S,PL[j], PW[i], PW[(i+1)%PW.size()] );
                     PS.push_back(I);
@@ -863,7 +909,7 @@ Poly sutherlandHodgman(Poly p, Poly window)
         }
         if(n>0)
         {
-            if(coupe(S,F, PW[i], PW[(i+1)%PW.size()] ))
+            if(coupe(S,F, PW[i], PW[(i+1)%PW.size()], window.isHoraire() ))
             {
                 I = intersection(S,F, PW[i], PW[(i+1)%PW.size()] );
                 PS.push_back(I);
@@ -929,8 +975,12 @@ void Fenetrage(int mode)
 
                     }
 
-                    //Tri des sommets dans l'ordre horaire
-                    temp.sortedPoints();
+
+                    if(temp.Getpoints().size())
+                    {
+                        //Tri des sommets dans l'ordre horaire
+                        temp.sortedPoints();
+                    }
                     break;
                 }
             //printf("\n%f, %f, %f", temp.Getcolor().Getred(),temp.Getcolor().Getgreen(), temp.Getcolor().Getblue() );
